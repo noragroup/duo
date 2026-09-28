@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <title>DUO</title>
+</head>
+
+<body>
+
+    <div id="player-name-container">
+
+        <input id="player-name" type="text" placeholder="Ton pseudo" maxlength="20">
+
+        <p id="player-name-message"></p>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- ÉCRAN D'ACCUEIL -->
+    <!-- ========================= -->
+
+    <div id="home-screen">
+
+        <div id="home-logo">
+            <img src="images/duo-logo.svg" alt="DUO">
+        </div>
+
+        <button id="choose-mode-button">
+            Choisir le mode de jeu
+        </button>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- CHOIX DU MODE DE JEU -->
+    <!-- ========================= -->
+
+    <div id="mode-screen" style="display: none;">
+
+        <h2>Choisir le mode de jeu</h2>
+
+        <div id="game-modes">
+
+            <button id="duo-mode-button">
+                <img src="images/duo-logo.svg" alt="DUO">
+            </button>
+
+            <button id="no-mercy-mode-button" disabled>
+                <img src="images/duo-no-mercy.svg" alt="DUO NO MERCY">
+
+                <span>En développement</span>
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- HÉBERGER / REJOINDRE -->
+    <!-- ========================= -->
+
+    <div id="connection-screen" style="display: none;">
+
+        <h2>DUO</h2>
+
+        <button id="host-game-button">
+            Héberger
+        </button>
+
+        <p id="connection-or">ou</p>
+
+        <input id="room-code" type="text" placeholder="Code du salon" maxlength="6">
+
+        <p id="room-code-message"></p>
+
+        <button id="confirm-join-room">
+            Rejoindre
+        </button>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- INTERFACE DU JEU -->
+    <!-- ========================= -->
+
+    <div id="game-interface" style="display: none;">
+
+        <button id="back-home-button">
+            🏠 Accueil
+        </button>
+
+        <div id="lobby-content">
+
+            <h1 id="lobby-title">Salon de jeu</h1>
+
+            <h2 id="room-info"></h2>
+
+            <button id="start-game">
+                Lancer la partie
+            </button>
+
+        </div>
+
+
+        <h3>Joueurs</h3>
+
+        <ul id="players-list"></ul>
+
+
+        <div id="game-content">
+
+            <!-- Carte sur la table -->
+
+            <div id="discard-section">
+
+                <h3>Carte sur la table</h3>
+
+                <div id="discard-pile"></div>
+
+            </div>
+
+
+            <!-- Tour -->
+
+            <p id="turn-info"></p>
+
+
+            <!-- Ma main -->
+
+            <h3 id="my-hand-title">
+                Ma main
+            </h3>
+
+            <div id="my-hand"></div>
+
+
+            <!-- Actions -->
+
+            <div id="game-actions">
+
+                <button id="draw-card">
+                    Piocher
+                </button>
+
+                <button id="pass-turn">
+                    Passer le tour
+                </button>
+
+            </div>
+
+
+            <p id="status">
+                Connexion...
+            </p>
+
+
+            <!-- Choix de couleur -->
+
+            <div id="color-choice">
+
+                <div id="color-choice-box">
+
+                    <p>Choisis une couleur</p>
+
+                    <div id="color-choice-buttons">
+
+                        <button data-color="red">
+                            🔴
+                        </button>
+
+                        <button data-color="blue">
+                            🔵
+                        </button>
+
+                        <button data-color="green">
+                            🟢
+                        </button>
+
+                        <button data-color="yellow">
+                            🟡
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- UNO -->
+
+            <button id="uno-button" style="display: none;">
+                DUO !
+            </button>
+
+            <div id="duo-announcement">
+
+                <div id="duo-player-name"></div>
+
+                <div id="duo-text">
+                    DUO !
+                </div>
+
+            </div>
+
+
+            <!-- Fin de partie -->
+
+            <div id="winner-message">
+
+                <div id="winner-message-box">
+
+                    <div id="final-ranking"></div>
+
+                    <button id="restart-game" style="display: none;">
+                        🔄 Relancer
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script type="module" src="script.js"></script>
+
+</body>
+
+</html>
