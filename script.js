@@ -1907,27 +1907,27 @@ function getCardImage(card) {
     }
 
     if (card.type === "number") {
-        return `${imageFolder}${card.color}-${card.value}.svg`;
+        return `${imageFolder}${card.color}-${card.value}.webp`;
     }
 
     if (card.type === "skip") {
-        return `${imageFolder}${card.color}-skip.svg`;
+        return `${imageFolder}${card.color}-skip.webp`;
     }
 
     if (card.type === "reverse") {
-        return `${imageFolder}${card.color}-reverse.svg`;
+        return `${imageFolder}${card.color}-reverse.webp`;
     }
 
     if (card.type === "draw2") {
-        return `${imageFolder}${card.color}-draw2.svg`;
+        return `${imageFolder}${card.color}-draw2.webp`;
     }
 
     if (card.type === "wild") {
-        return `${imageFolder}wild.svg`;
+        return `${imageFolder}wild.webp`;
     }
 
     if (card.type === "draw4") {
-        return `${imageFolder}draw4.svg`;
+        return `${imageFolder}draw4.webp`;
     }
 
     return null;
