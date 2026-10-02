@@ -935,26 +935,79 @@ function dealCards(deck, playerIds) {
 }
 
 function createGameState(playerIds) {
-    const deck = shuffleDeck(createDuoDeck());
-    const result = dealCards(deck, playerIds);
 
-    console.log("🎨 Game créé :", {
-        currentColor: null
-    });
+    const deck =
+        shuffleDeck(createDuoDeck());
 
-    const firstCard = result.remainingDeck.pop();
+    const result =
+        dealCards(deck, playerIds);
+
+    const initialCards = [];
+
+    let firstCard = null;
+
+    // La première carte doit être une carte
+    // numérique afin d'avoir immédiatement
+    // une couleur de départ valide.
+    while (
+        result.remainingDeck.length > 0
+    ) {
+
+        const candidate =
+            result.remainingDeck.pop();
+
+        if (candidate.type === "number") {
+
+            firstCard = candidate;
+
+            break;
+        }
+
+        initialCards.push(candidate);
+    }
+
+    // Les cartes spéciales retirées pour trouver
+    // la carte de départ retournent dans la pioche.
+    result.remainingDeck.push(
+        ...initialCards
+    );
+
+    shuffleDeck(
+        result.remainingDeck
+    );
+
+    console.log(
+        "🎨 Carte de départ :",
+        firstCard
+    );
 
     return {
+
         hands: result.hands,
-        deck: result.remainingDeck,
-        discardPile: [firstCard],
-        currentPlayer: playerIds[0],
+
+        deck:
+            result.remainingDeck,
+
+        discardPile: [
+            firstCard
+        ],
+
+        currentPlayer:
+            playerIds[0],
+
         direction: 1,
-        currentColor: firstCard.color,
+
+        currentColor:
+            firstCard.color,
+
         unoCalled: {},
+
         unoRequired: {},
+
         lastDraw4Player: null,
+
         draw4PreviousColor: null,
+
         draw4TargetPlayer: null
     };
 }
@@ -1067,26 +1120,44 @@ async function playCard(game, playerId, cardId, playerIds) {
     }
 
     if (card.type === "draw2") {
-        const nextPlayerId = game.currentPlayer;
 
-        for (let i = 0; i < 4; i++) {
-            if (currentGame.deck.length > 0) {
-                const drawnCard = currentGame.deck.pop();
-                currentGame.hands[nextPlayerId].push(drawnCard);
+        const nextPlayerId =
+            game.currentPlayer;
+
+        for (let i = 0; i < 2; i++) {
+
+            if (game.deck.length === 0) {
+                recycleDiscardPile(game);
             }
+
+            if (game.deck.length === 0) {
+                break;
+            }
+
+            const drawnCard =
+                game.deck.pop();
+
+            game.hands[nextPlayerId].push(
+                drawnCard
+            );
         }
 
-        console.log("➕4 : 4 cartes ajoutées à la main du joueur ciblé");
+        console.log(
+            "➕2 : 2 cartes ajoutées à la main du joueur ciblé :",
+            nextPlayerId
+        );
 
+        // Le joueur qui vient de piocher
+        // perd son tour.
         nextPlayer(
-            currentGame,
+            game,
             playerIds,
             finishOrder
         );
 
         console.log(
-            "➕4 : nouveau joueur :",
-            currentGame.currentPlayer
+            "➕2 : nouveau joueur :",
+            game.currentPlayer
         );
     }
 
