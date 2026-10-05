@@ -1,3 +1,7 @@
+#players-list-disable{
+  display: none;
+}
+
 #home-screen {
   min-height: 80vh;
 
@@ -63,6 +67,41 @@
   }
 }
 
+#player-duo-id-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+#player-duo-id {
+  margin: 4px 0 0;
+
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+#copy-duo-id-button {
+  padding: 3px 7px;
+
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 7px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+#copy-duo-id-button:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: scale(1.05);
+}
+
 .drawn-card-animation {
   animation: drawnCardIn 0.3s ease-out;
 }
@@ -92,6 +131,296 @@
 
   color: white;
   text-align: center;
+}
+
+#player-name-input-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+#validate-player-name-button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+
+  font-family: "Lexend", sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.12);
+
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+#validate-player-name-button:hover {
+  background: #ffffff;
+  color: #333;
+
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.16);
+}
+
+#player-profile {
+  position: fixed !important;
+
+  top: 15px !important;
+  bottom: auto !important;
+
+  left: 15px !important;
+  right: auto !important;
+
+  z-index: 1400;
+
+  padding: 12px 14px;
+
+  background: rgba(0, 0, 0, 0.3);
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.2);
+
+  color: white;
+
+  min-width: 150px;
+}
+
+#player-profile-name {
+  font-size: 15px;
+  font-weight: 700;
+
+  margin-bottom: 6px;
+}
+
+#player-profile-duo-id {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+#player-friends {
+  position: fixed;
+
+  top: 125px;
+  left: 15px;
+
+  width: 180px;
+  min-height: 300px;
+  height: auto;
+
+  padding: 12px 14px;
+
+  box-sizing: border-box;
+
+  background: rgba(0, 0, 0, 0.3);
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.2);
+
+  color: white;
+}
+
+#player-friends-title {
+  font-size: 15px;
+  font-weight: 700;
+
+  padding-bottom: 10px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+#no-friends-message {
+  margin-top: 15px;
+
+  font-size: 13px;
+
+  opacity: 0.65;
+}
+
+.friend-item {
+  display: flex;
+  align-items: center;
+
+  margin-top: 8px;
+  padding: 8px 10px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  border-radius: 99px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  color: white;
+}
+
+#add-friend-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-top: 12px;
+}
+
+#friend-duo-id-input {
+  flex: 1;
+  min-width: 0;
+
+  height: 42px;
+  padding: 6px 10px;
+
+  box-sizing: border-box;
+
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 9px;
+
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+
+  font-family: "Lexend", sans-serif;
+  font-size: 12px;
+
+  outline: none;
+
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+#add-friend-button {
+  flex-shrink: 0;
+
+  width: 32px;
+  height: 32px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 9px;
+
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+#add-friend-button:hover {
+  background: #ffffff;
+}
+
+#friend-requests-separator {
+  width: 100%;
+  height: 1px;
+  margin: 18px 0;
+
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.friend-request-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.accept-friend-button,
+.decline-friend-button {
+  width: 26px;
+  height: 26px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 7px;
+
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
+}
+
+.accept-friend-button:hover,
+.decline-friend-button:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: scale(1.05);
+}
+
+.friend-request-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#copy-duo-id-button {
+  padding: 2px 6px;
+
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+#copy-duo-id-button:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: scale(1.05);
 }
 
 @media (max-width: 600px) {
@@ -167,20 +496,6 @@
   width: 220px;
   max-width: 100%;
   height: auto;
-}
-
-#no-mercy-mode-button {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-#no-mercy-mode-button:hover {
-  transform: none;
-}
-
-#no-mercy-mode-button span {
-  font-size: 14px;
-  font-weight: 600;
 }
 
 #connection-screen {
@@ -765,29 +1080,16 @@ button:disabled {
 }
 
 #back-home-button {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 1500;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
 
-    background: rgba(255, 255, 255, 0.18);
-    color: white;
-
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: 12px;
-
-    padding: 9px 14px;
-
-    font-size: 14px;
-    font-weight: 700;
-
-    backdrop-filter: blur(6px);
-
-    cursor: pointer;
+  z-index: 1000;
 }
 
 #back-home-button:hover {
-    background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 #start-game {
@@ -865,6 +1167,232 @@ button:disabled {
   height: 128px;
   object-fit: contain;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+}
+
+/* ========================= */
+/* BOUTON NOUVEAUTÉS */
+/* ========================= */
+
+#player-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 10px;
+
+  background: rgba(0, 0, 0, 0.25);
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+#news-button {
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 10px 16px;
+
+  background: rgba(255, 215, 70, 0.9);
+  color: #222;
+
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.25),
+    0 0 12px rgba(255, 215, 70, 0.35);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+#news-button:hover {
+  background: #ffe477;
+
+  transform: translateY(-2px) scale(1.03);
+
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.3),
+    0 0 18px rgba(255, 215, 70, 0.6);
+}
+
+
+/* ========================= */
+/* POPUP NOUVEAUTÉS */
+/* ========================= */
+
+#news-popup {
+  position: fixed;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0, 0, 0, 0.65);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 3000;
+
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+#news-popup-content {
+  position: relative;
+
+  width: min(500px, 100%);
+
+  max-height: 80vh;
+  overflow-y: auto;
+
+  padding: 30px;
+
+  background: rgba(30, 30, 30, 0.95);
+  color: white;
+
+  border-radius: 20px;
+
+  box-sizing: border-box;
+
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+
+  display: block;
+}
+
+#news-popup-content .news-section {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#news-popup-content h2 {
+  margin-top: 0;
+  margin-bottom: 25px;
+
+  text-align: center;
+}
+
+#news-popup-content h3 {
+  margin-top: 20px;
+  margin-bottom: 8px;
+}
+
+#news-popup-content p,
+#news-popup-content li {
+  line-height: 1.5;
+}
+
+/* ========================= */
+/* BARRE DE DÉFILEMENT NEWS */
+/* ========================= */
+
+#news-popup-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+#news-popup-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#news-popup-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+}
+
+#news-popup-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+#close-news-button {
+  position: absolute;
+
+  top: 12px;
+  right: 12px;
+
+  width: 36px;
+  height: 36px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+
+  background: transparent;
+  color: white;
+
+  font-size: 18px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+#close-news-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.08);
+}
+
+/* ========================= */
+/* SECTIONS NOUVEAUTÉS */
+/* ========================= */
+
+.news-section {
+  margin-top: 25px;
+  padding: 18px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  border-radius: 14px;
+
+  border-left: 4px solid rgba(255, 215, 70, 0.9);
+}
+
+.news-section h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.news-section ul {
+  margin-bottom: 0;
+  padding-left: 22px;
+}
+
+.news-section li {
+  margin-bottom: 8px;
+}
+
+.news-section li:last-child {
+  margin-bottom: 0;
+}
+
+.news-date {
+  font-size: 13px;
+  opacity: 0.65;
+  margin-top: -4px;
 }
 
 @media (max-width: 600px) {

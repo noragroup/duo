@@ -12,12 +12,86 @@
 
 <body>
 
+    <span id="version-text">currentVersion</span>
+
     <div id="player-name-container">
 
-        <input id="player-name" type="text" placeholder="Ton pseudo" maxlength="20">
+        <div id="player-name-row">
+
+            <div id="player-name-input-container">
+
+                <input id="player-name" type="text" placeholder="Ton pseudo" maxlength="20">
+
+                <button id="validate-player-name-button" type="button">
+                    ✓
+                </button>
+
+            </div>
+
+            <button id="news-button" type="button">
+                🆕 Nouveautés
+            </button>
+
+        </div>
 
         <p id="player-name-message"></p>
 
+    </div>
+
+    <div id="players-list-disable">
+        <div id="player-profile">
+
+            <div id="player-profile-name">
+                👤 <span id="player-profile-username">Joueur</span>
+            </div>
+
+            <div id="player-profile-duo-id">
+
+                <span id="player-duo-id"></span>
+
+                <button id="copy-duo-id-button" type="button">
+                    📋
+                </button>
+
+            </div>
+
+        </div>
+
+        <div id="player-friends">
+
+            <div id="player-friends-title">
+                👥 Amis
+            </div>
+
+            <div id="add-friend-row">
+
+                <input id="friend-duo-id-input" type="text" placeholder="DUO-XXXXX" maxlength="9">
+
+                <button id="add-friend-button" type="button">
+                    +
+                </button>
+
+            </div>
+
+            <p id="no-friends-message">
+                Aucun ami pour le moment
+            </p>
+
+            <div id="friends-list"></div>
+
+            <div id="friend-requests-separator"></div>
+
+            <div id="friend-requests">
+
+                <div id="friend-requests-title">
+                    📨 Demandes
+                </div>
+
+                <div id="friend-requests-list"></div>
+
+            </div>
+
+        </div>
     </div>
 
     <!-- ========================= -->
@@ -30,9 +104,95 @@
             <img src="images/duo-logo.webp" alt="DUO">
         </div>
 
+        <p>⚠️ LE SITE N'EST PAS ENCORE BIEN ADAPTÉ POUR MOBILES ⚠️</p>
+
         <button id="choose-mode-button">
             Choisir le mode de jeu
         </button>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- POPUP NOUVEAUTÉS -->
+    <!-- ========================= -->
+
+    <div id="news-popup" style="display: none;">
+
+        <div id="news-popup-content">
+
+            <button id="close-news-button">
+                ✕
+            </button>
+
+            <h2>🆕 Nouveautés</h2>
+
+            <section class="news-section">
+
+                <h3>🚀 Version actuelle</h3>
+
+                <p class="news-date">
+                    Septembre 2026 - v0.2
+                </p>
+
+                <ul>
+                    <li>🎴 Jeu DUO original disponible</li>
+                    <li>👥 Parties multijoueurs synchronisées</li>
+                    <li>📊 Comptage des cartes des adversaires</li>
+                    <li>🏆 Classement final des joueurs</li>
+                    <li>🏠 Retour à l'accueil depuis une partie</li>
+                    <li>📢 Écran accueillant les mises à jour.</li>
+                </ul>
+
+            </section>
+
+            <section class="news-section">
+
+                <h3>✨ Améliorations récentes</h3>
+
+                <ul>
+                    <li>🎯 Système DUO amélioré</li>
+                    <li>🔔 Annonces DUO synchronisées entre les joueurs</li>
+                    <li>🔁 Possibilité de relancer une partie terminée</li>
+                    <li>📝 Sauvegarde de pseudo</li>
+                </ul>
+
+            </section>
+
+            <section class="news-section">
+
+                <h3>👾 Bugs réglés</h3>
+
+                <ul>
+                    <li>🃏 Impossibilité de jouer lorsque la première carte est un joker</li>
+                    <li>🎴 Ajout d'un +4 au joueur suivant lorsqu'une carte +2 est jouée</li>
+                </ul>
+
+            </section>
+
+            <section class="news-section">
+
+                <h3>🔮 Prochainement</h3>
+
+                <ul>
+                    <li>🎮 Nouveau mode de jeu</li>
+                    <li>🔔 Sons améliorés</li>
+                    <li>⚙️ Configuration de partie</li>
+                    <li>🎨 Améliorations de l'interface</li>
+                    <li>📱 Optimisations pour mobile</li>
+                    <li>🖌️ Personnalisation des cartes</li>
+                </ul>
+
+            </section>
+
+            <br>
+
+            <p class="news-date">
+                💡 DUO est toujours en développement. De nouvelles fonctionnalités arriveront progressivement. <br>
+                ⚠️ DUO est majoritairement développé avec l'aide de l'IA générative. Cependant tout les assets sont fait
+                à la main à l'aide d'Adobe Illustrator.
+            </p>
+
+        </div>
 
     </div>
 
@@ -54,7 +214,7 @@
             <button id="no-mercy-mode-button" disabled>
                 <img src="images/duo-no-mercy.webp" alt="DUO NO MERCY">
 
-                <span>En développement</span>
+                <span>EN DÉVELOPPEMENT</span>
             </button>
 
         </div>
@@ -68,7 +228,9 @@
 
     <div id="connection-screen" style="display: none;">
 
-        <h2>DUO</h2>
+        <div id="home-logo">
+            <img src="images/duo-logo.webp" id="current-game-mode-logo" alt="DUO">
+        </div>
 
         <button id="host-game-button">
             Héberger
