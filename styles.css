@@ -276,7 +276,7 @@
 
   background: rgba(255, 255, 255, 0.08);
 
-  border-radius: 99px;
+  border-radius: 10px;
 
   font-size: 13px;
   font-weight: 600;
@@ -430,7 +430,7 @@
   }
 }
 
-#choose-mode-button {
+#play-button {
   background: #6a5acd;
   color: white;
 
@@ -442,64 +442,8 @@
   border-radius: 14px;
 }
 
-#choose-mode-button:hover {
+#play-button:hover {
   background: #5848c2;
-}
-
-#mode-screen {
-  min-height: 80vh;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  text-align: center;
-}
-
-#mode-screen h2 {
-  margin-bottom: 30px;
-}
-
-#host-game-button {
-  z-index: 1000;
-}
-
-#game-modes {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 30px;
-  flex-wrap: wrap;
-}
-
-#game-modes button {
-  width: 260px;
-  min-height: 180px;
-
-  padding: 20px;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-
-  border-radius: 20px;
-
-  background: rgba(255, 255, 255, 0.18);
-  border: 2px solid rgba(255, 255, 255, 0.55);
-
-  backdrop-filter: blur(6px);
-
-  box-shadow:
-    0 6px 16px rgba(0, 0, 0, 0.18);
-}
-
-#game-modes button img {
-  width: 220px;
-  max-width: 100%;
-  height: auto;
 }
 
 #connection-screen {
@@ -531,11 +475,6 @@
   margin: 12px 0;
   font-weight: 600;
   text-align: center;
-}
-
-#connection-screen #room-code {
-  width: 280px;
-  max-width: 80vw;
 }
 
 #room-code-message {
@@ -1233,6 +1172,401 @@ button:disabled {
 
 
 /* ========================= */
+/* ÉCRAN CRÉER / REJOINDRE */
+/* ========================= */
+
+#connection-screen {
+  gap: 22px;
+}
+
+#connection-card {
+  width: min(420px, 92vw);
+  padding: 26px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+
+  border-radius: 22px;
+
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+#host-game-button {
+  z-index: 1000;
+
+  width: 100%;
+  margin: 0;
+  padding: 14px 20px;
+
+  background: #6a5acd;
+  color: white;
+
+  font-size: 18px;
+  font-weight: 700;
+
+  border-radius: 14px;
+}
+
+#host-game-button:hover {
+  background: #5848c2;
+}
+
+/* "ou" avec un trait de chaque côté */
+#connection-or {
+  width: 100%;
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  font-weight: 600;
+}
+
+#connection-or::before,
+#connection-or::after {
+  content: "";
+
+  flex: 1;
+  height: 1px;
+
+  background: rgba(255, 255, 255, 0.45);
+}
+
+#join-row {
+  width: 100%;
+
+  display: flex;
+  gap: 10px;
+}
+
+#join-row #room-code {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  max-width: none;
+
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+
+  font-size: 16px;
+  font-weight: 700;
+}
+
+#join-row #room-code::placeholder {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+#confirm-join-room {
+  margin: 0;
+  padding: 10px 20px;
+
+  background: #00a9c7;
+  color: white;
+
+  border-radius: 12px;
+}
+
+#confirm-join-room:hover {
+  background: #008eaa;
+}
+
+#connection-card #room-code-message {
+  margin: 0;
+}
+
+#connection-back-button,
+#copy-room-code-button,
+.mode-card .rules-button {
+  background: rgba(255, 255, 255, 0.18);
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  color: white;
+
+  box-shadow: none;
+}
+
+#connection-back-button:hover,
+#copy-room-code-button:hover,
+.mode-card .rules-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+#connection-back-button {
+  margin: 0;
+  min-height: 0;
+  padding: 8px 20px;
+
+  border-radius: 999px;
+
+  font-size: 14px;
+}
+
+/* ========================= */
+/* SALON : CODE, MODE, LANCEMENT */
+/* ========================= */
+
+#lobby-content {
+  text-align: center;
+}
+
+#room-code-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+#room-code-row #room-info {
+  margin: 15px 0;
+}
+
+#copy-room-code-button {
+  width: 44px;
+  margin: 0;
+  padding: 0;
+
+  border-radius: 12px;
+
+  font-size: 18px;
+}
+
+#lobby-setup {
+  width: min(960px, 100%);
+  margin: 10px auto 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+#lobby-mode-section {
+  width: 100%;
+}
+
+#game-interface #lobby-mode-title {
+  margin: 14px 0 4px;
+
+  font-size: 22px;
+}
+
+#lobby-mode-hint {
+  margin: 0 0 18px;
+
+  text-align: center;
+  font-size: 14px;
+
+  opacity: 0.85;
+}
+
+#lobby-modes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.mode-card {
+  width: 250px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.mode-card-select {
+  width: 100%;
+  min-height: 210px;
+
+  margin: 0;
+  padding: 18px 16px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border-radius: 20px;
+
+  background: rgba(255, 255, 255, 0.14);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  color: white;
+
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.mode-card-select img {
+  width: 190px;
+  max-width: 100%;
+  height: 84px;
+
+  object-fit: contain;
+}
+
+.mode-card-name {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.mode-card-description {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+
+  opacity: 0.85;
+}
+
+.mode-card-badge {
+  display: none;
+
+  margin-top: 2px;
+  padding: 3px 12px;
+
+  border-radius: 999px;
+
+  background: rgba(255, 215, 70, 0.95);
+  color: #222;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.mode-card-select:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+/* Mode choisi */
+.mode-card.selected .mode-card-select {
+  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 215, 70, 0.95);
+
+  box-shadow:
+    0 0 0 4px rgba(255, 215, 70, 0.25),
+    0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.mode-card.selected .mode-card-badge {
+  display: inline-block;
+}
+
+/* Joueur qui n'est pas l'hôte : il voit le mode mais ne peut pas le changer */
+.mode-card.readonly .mode-card-select {
+  cursor: default;
+}
+
+.mode-card.readonly .mode-card-select:hover:not(:disabled) {
+  transform: none;
+  background: rgba(255, 255, 255, 0.14);
+
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.mode-card.selected.readonly .mode-card-select:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.28);
+
+  box-shadow:
+    0 0 0 4px rgba(255, 215, 70, 0.25),
+    0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.mode-card .rules-button {
+  margin: 0;
+  min-height: 0;
+  padding: 8px 20px;
+
+  border-radius: 999px;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mode-card .rules-button:hover {
+  transform: scale(1.05);
+}
+
+#waiting-for-host {
+  margin: 16px 0 0;
+  padding: 8px 18px;
+
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ========================= */
+/* FIN DE PARTIE : BOUTONS DE L'HÔTE */
+/* ========================= */
+
+#winner-actions {
+  margin-top: 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+#winner-actions button {
+  min-width: 210px;
+  margin: 0;
+}
+
+#back-to-lobby-button {
+  background: #607d8b;
+  color: white;
+}
+
+#back-to-lobby-button:hover {
+  background: #546e7a;
+}
+
+#winner-waiting-host {
+  margin: 16px 0 0;
+
+  color: #555;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .mode-card {
+    width: min(300px, 100%);
+  }
+}
+
+/* ========================= */
 /* POPUP NOUVEAUTÉS */
 /* ========================= */
 
@@ -1399,50 +1733,6 @@ button:disabled {
   margin-top: -4px;
 }
 
-/* Une "carte" = bouton du mode + bouton des règles dessous */
-.game-mode-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-/* Le sélecteur #game-modes .rules-button est plus précis que
-   "#game-modes button" : il écrase le style "grosse carte" */
-#game-modes .rules-button {
-  width: auto;
-  min-height: 0;
-
-  padding: 8px 20px;
-
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-
-  border-radius: 999px;
-
-  background: rgba(255, 255, 255, 0.18);
-  border: 2px solid rgba(255, 255, 255, 0.55);
-  color: white;
-
-  font-size: 14px;
-  font-weight: 600;
-
-  box-shadow: none;
-  cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
-}
-
-#game-modes .rules-button:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
-}
-
 /* Fenêtre des règles (même look que la fenêtre Nouveautés) */
 #rules-popup {
   position: fixed;
@@ -1533,16 +1823,753 @@ button:disabled {
   transform: scale(1.08);
 }
 
+/* ========================= */
+/* PERSONNALISATION DES CARTES */
+/* À coller à la fin de styles.css */
+/* ========================= */
+
+/* Barre latérale : cachée à droite, glisse vers la gauche quand elle s'ouvre */
+#skin-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+
+  width: min(340px, 88vw);
+  height: 100%;
+
+  z-index: 1500;
+
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+#skin-sidebar.open {
+  transform: translateX(0);
+
+  /* au-dessus de la languette ⭐ des Niveaux */
+  z-index: 1600;
+}
+
+/* Languette toujours visible sur le bord droit de l'écran */
+#skin-sidebar-toggle {
+  position: absolute;
+  right: 100%;
+  top: 90px;
+
+  width: 46px;
+  height: 56px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 16px 0 0 16px;
+
+  background: rgba(30, 30, 30, 0.95);
+  color: white;
+
+  font-size: 22px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  box-shadow: -4px 4px 14px rgba(0, 0, 0, 0.3);
+
+  transition: width 0.2s ease;
+}
+
+#skin-sidebar-toggle:hover {
+  width: 54px;
+}
+
+#skin-sidebar-panel {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  box-sizing: border-box;
+
+  background: rgba(30, 30, 30, 0.97);
+  color: white;
+
+  border-radius: 20px 0 0 20px;
+
+  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.4);
+}
+
+#skin-sidebar-header {
+  position: relative;
+
+  padding: 22px 56px 14px 22px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+#skin-sidebar-header h2 {
+  margin: 0;
+
+  font-size: 20px;
+}
+
+#skin-sidebar-close {
+  position: absolute;
+
+  top: 16px;
+  right: 14px;
+
+  width: 36px;
+  height: 36px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+
+  background: transparent;
+  color: white;
+
+  font-size: 18px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+}
+
+#skin-sidebar-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+#skin-sidebar-body {
+  flex: 1;
+
+  z-index: 1000;
+
+  overflow-y: auto;
+
+  padding: 8px 18px 24px;
+}
+
+/* Une section par paquet (= par mode de jeu) */
+.skin-deck {
+  margin-top: 20px;
+}
+
+.skin-deck-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 12px;
+}
+
+.skin-deck-header img {
+  height: 32px;
+  width: auto;
+
+  max-width: 90px;
+  object-fit: contain;
+}
+
+.skin-deck-header h3 {
+  margin: 0;
+
+  font-size: 16px;
+}
+
+/* Un skin sélectionnable */
+.skin-option {
+  width: 100%;
+
+  padding: 14px;
+  margin-bottom: 10px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+
+  box-sizing: border-box;
+
+  border: 2px solid transparent;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+
+  font-family: inherit;
+  text-align: left;
+
+  cursor: pointer;
+
+  box-shadow: none;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.skin-option:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.skin-option.equipped {
+  border-color: rgba(255, 215, 70, 0.9);
+}
+
+.skin-option.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.skin-preview {
+  display: flex;
+  gap: 6px;
+
+  min-height: 70px;
+}
+
+.skin-preview img {
+  height: 70px;
+  width: auto;
+
+  border-radius: 6px;
+}
+
+.skin-name {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.skin-description {
+  font-size: 13px;
+  line-height: 1.4;
+
+  opacity: 0.7;
+}
+
+.skin-badge {
+  align-self: flex-start;
+
+  padding: 3px 10px;
+
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.14);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.skin-option.equipped .skin-badge {
+  background: rgba(255, 215, 70, 0.9);
+  color: #222;
+}
+
+.skin-coming-soon {
+  margin: 4px 0 0;
+
+  font-size: 13px;
+
+  opacity: 0.55;
+}
+
+/* ========================= */
+/* NIVEAUX & EXPÉRIENCE */
+/* REMPLACE l'ancien bloc "NIVEAUX & EXPÉRIENCE" dans styles.css */
+/* ========================= */
+
+/* Pastille de niveau en haut à droite (cliquer ouvre la fenêtre Niveaux) */
+#level-chip {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+
+  z-index: 1400;
+
+  min-width: 110px;
+  padding: 8px 12px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  font-family: inherit;
+  text-align: left;
+
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+}
+
+#level-chip:hover {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* En salon et en jeu : la pastille disparaît (la classe est posée par script.js) */
+body.in-game #level-chip {
+  display: none;
+}
+
+.level-chip-level {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Barres de progression (pastille et fenêtre Niveaux) */
+.level-chip-bar,
+.levels-progress-bar {
+  width: 100%;
+  height: 6px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.level-chip-bar-fill,
+.levels-progress-bar-fill {
+  height: 100%;
+
+  border-radius: 999px;
+
+  background: linear-gradient(90deg, #ffd746, #ff9f1c);
+
+  transition: width 0.4s ease;
+}
+
+/* ========================= */
+/* FENÊTRE "NIVEAUX" (à droite) */
+/* ========================= */
+
+#levels-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+
+  width: min(340px, 88vw);
+  height: 100%;
+
+  z-index: 1500;
+
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+#levels-sidebar.open {
+  transform: translateX(0);
+
+  /* au-dessus de la languette 🎨 de la Personnalisation */
+  z-index: 1600;
+}
+
+/* Languette sous celle de la Personnalisation (🎨 : top 90px + 56px de haut) */
+#levels-sidebar-toggle {
+  position: absolute;
+  right: 100%;
+  top: 156px;
+
+  width: 46px;
+  height: 56px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 16px 0 0 16px;
+
+  background: rgba(30, 30, 30, 0.95);
+  color: white;
+
+  font-size: 22px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  box-shadow: -4px 4px 14px rgba(0, 0, 0, 0.3);
+
+  transition: width 0.2s ease;
+}
+
+#levels-sidebar-toggle:hover {
+  width: 54px;
+}
+
+#levels-sidebar-panel {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  box-sizing: border-box;
+
+  background: rgba(30, 30, 30, 0.97);
+  color: white;
+
+  border-radius: 20px 0 0 20px;
+
+  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.4);
+}
+
+#levels-sidebar-header {
+  position: relative;
+
+  padding: 22px 56px 14px 22px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+#levels-sidebar-header h2 {
+  margin: 0;
+
+  font-size: 20px;
+}
+
+#levels-sidebar-close {
+  position: absolute;
+
+  top: 16px;
+  right: 14px;
+
+  width: 36px;
+  height: 36px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+
+  background: transparent;
+  color: white;
+
+  font-size: 18px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+}
+
+#levels-sidebar-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Carte du haut : niveau, EXP, points DUO, prochain skin */
+#levels-progress {
+  margin: 14px 18px 0;
+  padding: 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.08);
+  border-left: 4px solid rgba(255, 215, 70, 0.9);
+}
+
+.levels-progress-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.levels-progress-level {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.levels-progress-points {
+  font-size: 13px;
+  font-weight: 600;
+
+  opacity: 0.85;
+}
+
+.levels-progress-bar {
+  height: 8px;
+}
+
+.levels-progress-exp {
+  font-size: 13px;
+
+  opacity: 0.75;
+}
+
+.levels-progress-next {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Liste des récompenses */
+#levels-sidebar-body {
+  position: relative;
+
+  flex: 1;
+
+  overflow-y: auto;
+
+  padding: 16px 18px 24px;
+}
+
+.levels-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+/* Un petit encadré = un niveau */
+.level-box {
+  padding: 10px 12px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  box-sizing: border-box;
+
+  border: 2px solid transparent;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.07);
+
+  opacity: 0.75;
+}
+
+/* Niveau déjà atteint */
+.level-box.reached {
+  opacity: 1;
+
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Ton niveau actuel */
+.level-box.current {
+  border-color: rgba(255, 215, 70, 0.9);
+}
+
+/* Les niveaux avec un skin prennent toute la largeur */
+.level-box.has-skin {
+  grid-column: 1 / -1;
+
+  opacity: 1;
+
+  background: rgba(255, 215, 70, 0.12);
+}
+
+.level-box.has-skin.reached {
+  background: rgba(255, 215, 70, 0.22);
+}
+
+.level-box-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.level-box-number {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.level-box-check {
+  width: 20px;
+  height: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: rgba(255, 215, 70, 0.9);
+  color: #222;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.level-reward {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Les niveaux "paliers" (50 points) ressortent un peu */
+.level-box.milestone .level-reward:first-of-type {
+  color: #ffd746;
+}
+
+.level-reward-skin {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-top: 2px;
+}
+
+.level-reward-skin img {
+  height: 48px;
+  width: auto;
+
+  border-radius: 6px;
+}
+
+.level-reward-skin-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.level-reward-skin-deck {
+  font-size: 12px;
+  font-weight: 500;
+
+  opacity: 0.7;
+}
+
+.levels-footer {
+  margin: 16px 0 0;
+
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+
+  opacity: 0.6;
+}
+
+/* ========================= */
+/* RÉCOMPENSES DE FIN DE PARTIE */
+/* ========================= */
+
+#game-reward {
+  margin-top: 20px;
+  padding: 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  border-radius: 14px;
+
+  background: rgba(0, 0, 0, 0.05);
+
+  color: #333;
+  text-align: left;
+}
+
+#game-reward h4 {
+  margin: 0 0 2px;
+
+  text-align: center;
+  font-size: 16px;
+}
+
+.game-reward-row {
+  display: flex;
+  justify-content: space-between;
+
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.game-reward-total {
+  padding-top: 6px;
+
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.game-reward-bar {
+  width: 100%;
+  height: 10px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.game-reward-bar-fill {
+  height: 100%;
+
+  border-radius: 999px;
+
+  background: linear-gradient(90deg, #ffd746, #ff9f1c);
+
+  transition: width 0.9s ease;
+}
+
+.game-reward-level {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.game-reward-levelup {
+  padding: 10px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  border-radius: 12px;
+
+  background: rgba(255, 215, 70, 0.3);
+
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.game-reward-levelup-title {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.game-reward-note {
+  margin: 0;
+
+  font-size: 14px;
+  text-align: center;
+}
+
 @media (max-width: 600px) {
   #home-logo img {
-    width: 240px;
-  }
-
-  #game-modes {
-    flex-direction: column;
-  }
-
-  #game-modes button {
     width: 240px;
   }
 
@@ -1579,5 +2606,588 @@ button:disabled {
   #game-actions button {
     flex: 1;
     max-width: 160px;
+  }
+}
+
+
+/* ============================================================ */
+/* MOBILE & ÉCRANS TACTILES                                      */
+/* Tout ce bloc est limité aux petits écrans (<= 820px), aux      */
+/* téléphones en paysage et aux écrans sans souris : l'affichage  */
+/* sur PC n'est pas modifié.                                      */
+/* ============================================================ */
+
+/* ------------------------------------------------------------ */
+/* ÉCRANS TACTILES (pas de souris)                               */
+/* ------------------------------------------------------------ */
+
+@media (hover: none) {
+
+  /* Pas d'effet "survol" qui reste collé après un toucher */
+  button:hover,
+  #news-button:hover,
+  .mode-card .rules-button:hover {
+    transform: none;
+  }
+
+  .playable-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    filter: drop-shadow(0 0 10px gold);
+  }
+
+  /* Pas de zoom au double toucher, pas de flash gris au toucher */
+  button,
+  .card-image,
+  #level-chip {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Appui long sur une carte : pas de menu "enregistrer l'image" */
+  .card-image {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+  }
+}
+
+/* ------------------------------------------------------------ */
+/* PETITS ÉCRANS                                                 */
+/* ------------------------------------------------------------ */
+
+@media (max-width: 820px), (pointer: coarse) and (max-height: 500px) {
+
+  /* --- Page : encoches, barre du navigateur, éléments fixes --- */
+
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+
+    /* le haut est réservé à la pastille de niveau / au bouton Accueil */
+    padding:
+      calc(56px + env(safe-area-inset-top))
+      max(20px, env(safe-area-inset-right))
+      calc(12px + env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-left));
+  }
+
+  /* en salon / en jeu : place pour la barre d'actions fixée en bas */
+  body.in-game {
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
+  }
+
+  /* --- Accueil --- */
+
+  #home-screen {
+    min-height: 60vh;
+    min-height: 60dvh;
+    gap: 22px;
+  }
+
+  #play-button {
+    width: min(320px, 100%);
+    min-height: 56px;
+
+    font-size: 20px;
+  }
+
+  /* --- Pseudo + Nouveautés : dans la page (en haut) au lieu d'être collés en bas,
+         pour ne plus être cachés par le clavier ni par les autres éléments --- */
+
+  #player-name-container {
+    position: static;
+    transform: none;
+
+    width: 100%;
+    margin: 0 0 14px;
+  }
+
+  #player-name-row {
+    width: 100%;
+    box-sizing: border-box;
+
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  #player-name-input-container {
+    flex: 1 1 100%;
+    min-width: 0;
+
+    gap: 6px;
+  }
+
+  #player-name {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    max-width: none;
+  }
+
+  #news-button {
+    flex: 1 1 100%;
+    min-height: 44px;
+  }
+
+  /* 16px minimum : sinon iPhone zoome sur le champ quand on le touche */
+  #player-name,
+  #room-code,
+  #friend-duo-id-input {
+    font-size: 16px;
+  }
+
+  /* --- Créer / rejoindre --- */
+
+  #connection-back-button {
+    min-height: 44px;
+  }
+
+  /* --- Salon --- */
+
+  #lobby-title {
+    margin-top: 8px;
+
+    font-size: 26px;
+  }
+
+  #room-info {
+    padding: 10px 16px;
+
+    font-size: 20px;
+  }
+
+  #game-interface h3 {
+    margin: 12px 0 6px;
+
+    font-size: 1.15em;
+  }
+
+  #players-list {
+    margin: 6px auto 12px;
+    gap: 6px;
+  }
+
+  #players-list li {
+    min-width: 0;
+    padding: 6px 10px;
+
+    font-size: 13px;
+  }
+
+  #start-game {
+    width: min(320px, 100%);
+    min-height: 56px;
+
+    font-size: 18px;
+  }
+
+  /* Cartes de mode : une ligne compacte chacune (logo à gauche, texte à droite) */
+
+  #lobby-modes {
+    gap: 12px;
+  }
+
+  .mode-card {
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .mode-card-select {
+    min-height: 0;
+    padding: 12px 14px;
+
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    column-gap: 12px;
+    row-gap: 2px;
+    align-items: center;
+    justify-content: stretch;
+
+    text-align: left;
+  }
+
+  .mode-card-select img {
+    grid-row: 1 / span 3;
+
+    width: 96px;
+    height: 64px;
+  }
+
+  .mode-card-name,
+  .mode-card-description,
+  .mode-card-badge {
+    grid-column: 2;
+  }
+
+  .mode-card-badge {
+    justify-self: start;
+  }
+
+  .mode-card .rules-button {
+    min-height: 40px;
+  }
+
+  /* --- Partie --- */
+
+  #discard-section {
+    margin: 12px 0 6px;
+  }
+
+  #discard-pile {
+    min-height: 107px;
+    margin: 6px 0;
+  }
+
+  #turn-info {
+    width: 100%;
+    box-sizing: border-box;
+
+    margin: 8px 0;
+
+    font-size: 15px;
+  }
+
+  #game-interface #my-hand-title {
+    margin: 6px 0 0;
+  }
+
+  /* La main défile horizontalement, cartes qui se chevauchent légèrement :
+     plus de rangées qui repoussent les boutons hors de l'écran */
+  #my-hand {
+    width: 100%;
+    box-sizing: border-box;
+
+    margin-top: 0;
+    /* le haut laisse la place aux cartes jouables qui se soulèvent */
+    padding: 24px 14px 10px;
+    gap: 0;
+
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    justify-content: safe center;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+
+    scrollbar-width: none;
+  }
+
+  #my-hand::-webkit-scrollbar {
+    display: none;
+  }
+
+  #my-hand .card-image {
+    flex: 0 0 auto;
+
+    width: 62px;
+    height: 89px;
+
+    margin-left: -14px;
+  }
+
+  #my-hand .card-image:first-child {
+    margin-left: 0;
+  }
+
+  /* Boutons Piocher / Passer : barre fixée en bas de l'écran, toujours sous le pouce */
+  #game-actions {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    z-index: 1050;
+
+    width: auto;
+    margin: 0;
+    padding:
+      8px
+      max(12px, env(safe-area-inset-right))
+      calc(10px + env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-left));
+
+    gap: 10px;
+    flex-wrap: nowrap;
+
+    /* la barre elle-même ne bloque pas les touchers : seuls les boutons réagissent */
+    pointer-events: none;
+  }
+
+  #game-actions button {
+    pointer-events: auto;
+
+    flex: 1;
+    max-width: 240px;
+    min-height: 54px;
+    margin: 0;
+
+    font-size: 16px;
+
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Bouton DUO ! : gros bouton rond flottant, à portée du pouce
+     (il n'apparaît que lorsqu'il te reste une carte, c'est le JavaScript qui l'affiche) */
+  #uno-button {
+    position: fixed;
+    right: max(14px, env(safe-area-inset-right));
+    bottom: calc(86px + env(safe-area-inset-bottom));
+
+    z-index: 1100;
+
+    width: 88px;
+    height: 88px;
+
+    margin: 0;
+    padding: 0;
+
+    border: 4px solid rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+
+    font-size: 20px;
+    font-weight: 800;
+
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+
+    animation: duoButtonPulse 1s ease-in-out infinite;
+  }
+
+  @keyframes duoButtonPulse {
+
+    0%,
+    100% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.08);
+    }
+  }
+
+  /* --- Fenêtres au centre de l'écran --- */
+
+  #color-choice-box {
+    width: min(92vw, 360px);
+    box-sizing: border-box;
+
+    padding: 22px 18px;
+  }
+
+  #color-choice-buttons {
+    gap: 14px;
+  }
+
+  #color-choice-buttons button {
+    width: 64px;
+    height: 64px;
+
+    font-size: 32px;
+  }
+
+  #winner-message-box {
+    max-height: 90vh;
+    max-height: 90dvh;
+    overflow-y: auto;
+
+    padding: 20px;
+  }
+
+  #winner-actions button {
+    width: 100%;
+    min-width: 0;
+    min-height: 52px;
+  }
+
+  #news-popup,
+  #rules-popup {
+    padding: 12px;
+  }
+
+  #news-popup-content,
+  #rules-popup-content {
+    max-height: 88vh;
+    max-height: 88dvh;
+
+    padding: 22px 18px;
+  }
+
+  #news-popup-content img,
+  #rules-popup-content img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  #close-news-button,
+  #close-rules-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* --- Bouton Accueil : en haut à gauche (plus au milieu des cartes) --- */
+
+  #back-home-button {
+    top: calc(10px + env(safe-area-inset-top));
+    left: calc(10px + env(safe-area-inset-left));
+    bottom: auto;
+    transform: none;
+
+    margin: 0;
+    padding: 6px 14px;
+    min-height: 40px;
+
+    font-size: 14px;
+  }
+
+  /* --- Pastille de niveau --- */
+
+  #level-chip {
+    top: calc(10px + env(safe-area-inset-top));
+    right: calc(10px + env(safe-area-inset-right));
+
+    min-width: 96px;
+    padding: 6px 10px;
+  }
+
+  /* --- Fenêtres latérales (Personnalisation / Niveaux) --- */
+
+  #skin-sidebar,
+  #levels-sidebar {
+    width: min(360px, 92vw);
+  }
+
+  /* languettes plus petites, au milieu du bord droit (hors du chemin des cartes) */
+  #skin-sidebar-toggle,
+  #levels-sidebar-toggle,
+  #skin-sidebar-toggle:hover,
+  #levels-sidebar-toggle:hover {
+    width: 28px;
+    height: 48px;
+
+    font-size: 17px;
+  }
+
+  #skin-sidebar-toggle {
+    top: 36%;
+  }
+
+  #levels-sidebar-toggle {
+    top: calc(36% + 56px);
+  }
+
+  #skin-sidebar-header,
+  #levels-sidebar-header {
+    padding-top: calc(18px + env(safe-area-inset-top));
+  }
+
+  #skin-sidebar-close,
+  #levels-sidebar-close {
+    top: calc(12px + env(safe-area-inset-top));
+    right: 10px;
+
+    width: 44px;
+    height: 44px;
+  }
+
+  #skin-sidebar-body,
+  #levels-sidebar-body {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+}
+
+/* ------------------------------------------------------------ */
+/* TABLETTE EN PORTRAIT : cartes de la main un peu plus grandes  */
+/* ------------------------------------------------------------ */
+
+@media (min-width: 600px) and (max-width: 820px) {
+
+  #my-hand .card-image {
+    width: 84px;
+    height: 120px;
+
+    margin-left: -20px;
+  }
+
+  #my-hand .card-image:first-child {
+    margin-left: 0;
+  }
+
+  #my-hand {
+    padding-top: 30px;
+  }
+}
+
+/* ------------------------------------------------------------ */
+/* TÉLÉPHONE EN PAYSAGE (écran très bas)                         */
+/* ------------------------------------------------------------ */
+
+@media (orientation: landscape) and (max-height: 500px) and (pointer: coarse),
+(orientation: landscape) and (max-height: 480px) and (max-width: 920px) {
+
+  body {
+    padding-top: calc(48px + env(safe-area-inset-top));
+  }
+
+  body.in-game {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+
+  #home-screen {
+    min-height: 0;
+    gap: 12px;
+  }
+
+  #home-logo img {
+    width: 180px;
+  }
+
+  #discard-section h3,
+  #game-interface #my-hand-title {
+    display: none;
+  }
+
+  #discard-section {
+    margin: 4px 0;
+  }
+
+  #discard-pile {
+    min-height: 80px;
+    margin: 2px 0;
+  }
+
+  #discard-pile .card-image {
+    width: 56px;
+    height: 80px;
+  }
+
+  #my-hand .card-image {
+    width: 50px;
+    height: 72px;
+  }
+
+  #my-hand {
+    padding-top: 18px;
+  }
+
+  #turn-info {
+    margin: 4px 0;
+    padding: 6px 10px;
+  }
+
+  #players-list {
+    margin: 4px auto 6px;
+  }
+
+  #game-actions button {
+    min-height: 46px;
+  }
+
+  #uno-button {
+    bottom: calc(70px + env(safe-area-inset-bottom));
+
+    width: 72px;
+    height: 72px;
   }
 }

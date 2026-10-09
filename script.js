@@ -1,4 +1,4 @@
-let currentVersion = "DUO v0.3";
+let currentVersion = "DUO v0.4";
 
 document.getElementById("version-text").textContent = currentVersion;
 
@@ -23,10 +23,19 @@ import {
 import * as duoRules from "./game/duo.js";
 import * as noMercyRules from "./game/duo-no-mercy.js";
 
+// Skins de cartes (paquets) + barre de personnalisation
+import { getCardImagePath, initSkinSidebar } from "./skins.js";
+
+// Niveaux, EXP et récompenses de fin de partie
+import { initProgress, handleRoomProgress, getServerTime } from "./progress.js";
+
 let playerId = null;
 let currentRoomCode = null;
 let currentGame = null;
 let currentGameMode = "duo"; // "duo" ou "duo-no-mercy" (synchronisé depuis la salle)
+let currentHostId = null;    // hôte de la salle (seul à pouvoir changer le mode)
+let currentRoomStatus = null; // "waiting", "playing" ou "finished"
+let wasMyTurn = false;        // sert à faire vibrer le téléphone quand c'est ton tour
 let hasDrawnThisTurn = false;
 let pendingWildCard = null;
 let finishOrder = [];
@@ -69,6 +78,17 @@ console.log("Firebase connecté !");
 // MODES DE JEU
 // ===========================================================================
 
+// Petit écran (téléphone, tablette en portrait, téléphone en paysage) : même condition que le CSS mobile
+function isMobileLayout() {
+    return window.matchMedia("(max-width: 820px), (pointer: coarse) and (max-height: 500px)").matches;
+}
+
+// Le téléphone vibre brièvement quand c'est ton tour (Android ; ignoré sur PC)
+function vibrateOnMyTurn() {
+    if (!window.matchMedia("(pointer: coarse)").matches) return;
+    if (typeof navigator.vibrate === "function") navigator.vibrate(120);
+}
+
 function isNoMercy() {
     return currentGameMode === "duo-no-mercy";
 }
@@ -77,16 +97,21 @@ function getRules() {
     return isNoMercy() ? noMercyRules : duoRules;
 }
 
-// Met à jour le logo et le titre selon le mode
+// Met à jour le choix du mode dans le salon (carte sélectionnée + texte d'aide)
 function applyModeUI() {
-    const logo = document.getElementById("current-game-mode-logo");
-    if (logo) {
-        logo.src = isNoMercy() ? "images/duo-no-mercy.webp" : "images/duo-logo.webp";
-        logo.alt = isNoMercy() ? "DUO NO MERCY" : "DUO";
-    }
+    const isHost = currentHostId === playerId;
 
-    const title = document.getElementById("lobby-title");
-    if (title) title.textContent = isNoMercy() ? "Salon NO MERCY" : "Salon de jeu";
+    document.querySelectorAll("#lobby-modes .mode-card[data-mode]").forEach(card => {
+        card.classList.toggle("selected", card.dataset.mode === currentGameMode);
+        card.classList.toggle("readonly", !isHost);
+    });
+
+    const hint = document.getElementById("lobby-mode-hint");
+    if (hint) {
+        hint.textContent = isHost
+            ? "Clique sur un mode pour le choisir. Tu peux le changer tant que la partie n'est pas lancée."
+            : "Seul l'hôte peut changer le mode de jeu.";
+    }
 }
 
 // Ordre des places : stable en No Mercy (game.order), sinon les joueurs ayant une main
@@ -166,6 +191,7 @@ document.getElementById("restart-game")?.addEventListener("click", startGame);
 signInAnonymously(auth)
     .then(async userCredential => {
         playerId = userCredential.user.uid;
+        initProgress({ db, playerId });
         const savedName = localStorage.getItem("duo-player-name") || "Joueur";
 
         const profileElem = document.getElementById("player-profile-username");
@@ -248,9 +274,11 @@ async function createRoom() {
     onDisconnect(playerRef).remove();
 
     currentRoomCode = roomCode;
+    currentHostId = playerId;
     roomSnapshotReceived = false;
     document.getElementById("connection-screen").style.display = "none";
     document.getElementById("game-interface").style.display = "block";
+    document.body.classList.add("in-game"); // cache la pastille de niveau en salon / en jeu
     document.getElementById("room-info").textContent = `Salon : ${roomCode}`;
     applyModeUI();
 
@@ -304,6 +332,7 @@ async function joinRoom() {
     roomSnapshotReceived = false;
     document.getElementById("connection-screen").style.display = "none";
     document.getElementById("game-interface").style.display = "block";
+    document.body.classList.add("in-game"); // cache la pastille de niveau en salon / en jeu
     document.getElementById("room-info").textContent = `Salon : ${roomCode}`;
     applyModeUI();
 
@@ -356,17 +385,21 @@ function listenToRoom() {
 
         roomPlayers = room.players || {};
 
-        // Le mode vient de la salle
-        if (room.mode && room.mode !== currentGameMode) {
-            currentGameMode = room.mode;
-            applyModeUI();
-        }
+        // Le mode, l'hôte et le statut viennent de la salle
+        // (l'hôte peut changer le mode dans le salon, tout le monde est mis à jour)
+        if (room.mode) currentGameMode = room.mode;
+        currentHostId = room.hostId || null;
+        currentRoomStatus = room.status;
+        applyModeUI();
 
         if (room.status === "waiting") statusElement.textContent = "🟢 En attente de joueurs...";
         if (room.status === "playing") statusElement.textContent = "🎮 Partie en cours !";
         if (room.status === "finished") statusElement.textContent = "🏆 Partie terminée !";
 
         finishOrder = room.finishOrder || [];
+
+        // Fin de partie : attribue l'EXP (une seule fois par partie)
+        handleRoomProgress(room, playerId);
 
         if (room.status === "finished") {
             displayFinalRanking(room);
@@ -429,6 +462,11 @@ function listenToRoom() {
 
             // Sécurité : si ce n'est pas mon tour, je n'ai pas pioché
             if (currentGame.currentPlayer !== playerId) hasDrawnThisTurn = false;
+
+            // C'est devenu mon tour : petite vibration sur téléphone
+            const nowMyTurn = room.status === "playing" && currentGame.currentPlayer === playerId;
+            if (nowMyTurn && !wasMyTurn) vibrateOnMyTurn();
+            wasMyTurn = nowMyTurn;
 
             if (currentGame.hands[playerId]) {
                 displayMyHand(currentGame.hands[playerId]);
@@ -505,6 +543,23 @@ function listenToRoom() {
         if (room.game?.discardPile) {
             displayDiscardCard(room.game.discardPile[room.game.discardPile.length - 1]);
         }
+
+        // Retour au salon : il n'y a plus de partie, on remet l'affichage à zéro
+        if (!room.game && currentGame) {
+            currentGame = null;
+            hasDrawnThisTurn = false;
+            drawnCardId = null;
+
+            displayMyHand(null);
+            displayDiscardCard(null);
+            displayTurnInfo();
+            updateGameButtons();
+            updateUnoButton();
+            updateBackgroundColor();
+            checkPendingRoulette();
+            displayPlayers(room.players, room.hostId);
+            updateHostUI(room.hostId);
+        }
     });
 }
 
@@ -575,10 +630,17 @@ function displayFinalRanking(room) {
     });
 
     finalRanking.innerHTML = html;
+    // Seul l'hôte peut relancer ou retourner au salon
+    const isHost = room.hostId === playerId;
+    const actions = document.getElementById("winner-actions");
     const restartButton = document.getElementById("restart-game");
-    if (restartButton) {
-        restartButton.style.display = room.hostId === playerId ? "block" : "none";
-    }
+    const lobbyButton = document.getElementById("back-to-lobby-button");
+    const waitingMessage = document.getElementById("winner-waiting-host");
+
+    if (actions) actions.style.display = isHost ? "flex" : "none";
+    if (restartButton) restartButton.style.display = isHost ? "block" : "none";
+    if (lobbyButton) lobbyButton.style.display = isHost ? "block" : "none";
+    if (waitingMessage) waitingMessage.style.display = isHost ? "none" : "block";
 
     winnerMessage.style.display = "flex";
 }
@@ -657,14 +719,18 @@ function describeGameEvent(event, game) {
 
 function updateHostUI(hostId) {
     const button = document.getElementById("start-game");
+    const waitingMessage = document.getElementById("waiting-for-host");
     if (!button) return;
 
     if (currentGame && currentGame.currentPlayer) {
         button.style.display = "none";
+        if (waitingMessage) waitingMessage.style.display = "none";
         return;
     }
 
-    button.style.display = hostId === playerId ? "block" : "none";
+    const isHost = hostId === playerId;
+    button.style.display = isHost ? "block" : "none";
+    if (waitingMessage) waitingMessage.style.display = isHost ? "none" : "block";
 }
 
 // ===========================================================================
@@ -698,6 +764,9 @@ async function startGame() {
     await update(roomRef, {
         status: "playing",
         finishOrder: [],
+        gameId: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, // identifie la partie
+        startedAt: getServerTime(),                                         // sert à refuser l'EXP des parties trop courtes
+        participants: playerIds,                                            // seuls ces joueurs gagnent de l'EXP
         game: getSharedGame(),
         hands: game.hands
     });
@@ -756,6 +825,10 @@ function displayMyHand(hand) {
     const title = document.getElementById("my-hand-title");
     if (!container) return;
 
+    // Sur mobile la main défile horizontalement : on garde la position à chaque réaffichage
+    const previousScroll = container.scrollLeft;
+    let drawnElement = null;
+
     container.innerHTML = "";
 
     if (!hand) {
@@ -777,6 +850,7 @@ function displayMyHand(hand) {
 
         if (card.id === drawnCardId) {
             cardElement.classList.add("drawn-card-animation");
+            drawnElement = cardElement;
             drawnCardId = null;
         }
 
@@ -784,6 +858,13 @@ function displayMyHand(hand) {
 
         container.appendChild(cardElement);
     });
+
+    container.scrollLeft = previousScroll;
+
+    // Mobile : la carte qu'on vient de piocher est ajoutée au bout de la main, on la montre
+    if (drawnElement && isMobileLayout()) {
+        drawnElement.scrollIntoView({ inline: "center", block: "nearest" });
+    }
 
     updatePlayableCards();
 }
@@ -911,23 +992,27 @@ function listenToMyHand() {
     });
 }
 
+// Image d'une carte : dépend du mode de jeu ET du skin équipé (voir skins.js)
 function getCardImage(card) {
-    if (isNoMercy()) {
-        const imageName = noMercyRules.getCardImageName(card);
-        return imageName ? `images/duo-no-mercy/${imageName}.webp` : null;
+    return getCardImagePath(currentGameMode, card);
+}
+
+// Réaffiche les cartes déjà à l'écran (quand le joueur change de skin en pleine partie)
+function refreshCardImages() {
+    if (!currentGame) return;
+
+    if (currentGame.hands?.[playerId]) {
+        displayMyHand(currentGame.hands[playerId]);
     }
 
-    const imageFolder = "images/duo/";
-
-    if (card.type === "number") return `${imageFolder}${card.color}-${card.value}.webp`;
-    if (card.type === "skip") return `${imageFolder}${card.color}-skip.webp`;
-    if (card.type === "reverse") return `${imageFolder}${card.color}-reverse.webp`;
-    if (card.type === "draw2") return `${imageFolder}${card.color}-draw2.webp`;
-    if (card.type === "wild") return `${imageFolder}wild.webp`;
-    if (card.type === "draw4") return `${imageFolder}draw4.webp`;
-
-    return null;
+    const pile = currentGame.discardPile;
+    if (pile?.length) {
+        displayDiscardCard(pile[pile.length - 1]);
+    }
 }
+
+// Barre de personnalisation à droite de l'écran
+initSkinSidebar({ onChange: refreshCardImages });
 
 function displayDiscardCard(card) {
     const container = document.getElementById("discard-pile");
@@ -1334,23 +1419,275 @@ function showRotateChoice(card) {
 // NAVIGATION ENTRE LES ÉCRANS
 // ===========================================================================
 
-document.getElementById("choose-mode-button")?.addEventListener("click", () => {
+// Mobile : toucher en dehors d'une fenêtre latérale (Personnalisation / Niveaux) la ferme.
+// Le toucher est "avalé" pour ne pas jouer par erreur une carte située derrière.
+document.addEventListener("click", (event) => {
+    if (!isMobileLayout()) return;
+    // la pastille ouvre la fenêtre Niveaux ; les fenêtres au premier plan gardent leurs propres boutons
+    if (event.target.closest("#level-chip, #winner-message, #color-choice, #choice-modal, #rules-popup, #news-popup")) return;
+
+    const outside = [...document.querySelectorAll("#skin-sidebar.open, #levels-sidebar.open")]
+        .filter(sidebar => !sidebar.contains(event.target));
+    if (outside.length === 0) return;
+
+    outside.forEach(sidebar => {
+        sidebar.classList.remove("open");
+        sidebar.querySelector("button[aria-expanded]")?.setAttribute("aria-expanded", "false");
+    });
+
+    event.stopPropagation();
+    event.preventDefault();
+}, true);
+
+// "Jouer à DUO !" -> écran créer / rejoindre
+document.getElementById("play-button")?.addEventListener("click", () => {
     document.getElementById("home-screen").style.display = "none";
-    document.getElementById("mode-screen").style.display = "flex";
-});
-
-document.getElementById("duo-mode-button")?.addEventListener("click", () => {
-    currentGameMode = "duo";
-    applyModeUI();
-    document.getElementById("mode-screen").style.display = "none";
     document.getElementById("connection-screen").style.display = "flex";
 });
 
-document.getElementById("no-mercy-mode-button")?.addEventListener("click", () => {
-    currentGameMode = "duo-no-mercy";
-    applyModeUI();
-    document.getElementById("mode-screen").style.display = "none";
-    document.getElementById("connection-screen").style.display = "flex";
+document.getElementById("connection-back-button")?.addEventListener("click", () => {
+    document.getElementById("connection-screen").style.display = "none";
+    document.getElementById("home-screen").style.display = "flex";
+    document.getElementById("room-code-message").textContent = "";
+});
+
+// Entrée dans le champ du code = Rejoindre
+document.getElementById("room-code")?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") document.getElementById("confirm-join-room")?.click();
+});
+
+// ===========================================================================
+// SALON : CHOIX DU MODE (hôte), CODE, RETOUR AU SALON
+// ===========================================================================
+
+// L'hôte clique sur un mode : tous les joueurs du salon sont mis à jour
+document.querySelectorAll("#lobby-modes .mode-card-select[data-mode]").forEach(button => {
+    button.addEventListener("click", async () => {
+        const mode = button.dataset.mode;
+
+        if (!currentRoomCode || !playerId) return;
+        if (currentHostId !== playerId) return;          // seul l'hôte
+        if (currentRoomStatus !== "waiting") return;     // pas pendant une partie
+        if (mode === currentGameMode) return;
+
+        currentGameMode = mode;                          // affichage immédiat
+        applyModeUI();
+
+        await update(ref(db, `rooms/${currentRoomCode}`), { mode: mode });
+    });
+});
+
+// Copier le code du salon
+document.getElementById("copy-room-code-button")?.addEventListener("click", async () => {
+    if (!currentRoomCode) return;
+
+    const button = document.getElementById("copy-room-code-button");
+    try {
+        await navigator.clipboard.writeText(currentRoomCode);
+        button.textContent = "✓";
+        setTimeout(() => { button.textContent = "📋"; }, 1500);
+    } catch (error) {
+        console.error("Impossible de copier le code :", error);
+    }
+});
+
+// Fin de partie : l'hôte retourne au salon (pour changer de mode, par exemple)
+document.getElementById("back-to-lobby-button")?.addEventListener("click", async () => {
+    if (!currentRoomCode || currentHostId !== playerId) return;
+
+    await update(ref(db, `rooms/${currentRoomCode}`), {
+        status: "waiting",
+        finishOrder: null,
+        game: null,
+        hands: null,
+        gameId: null,
+        startedAt: null,
+        participants: null
+    });
+});
+
+// ===========================================================================
+// RÈGLES DES MODES (boutons "📖 Règles" des cartes de mode, dans le salon)
+// ===========================================================================
+
+// Pour modifier les règles affichées, il suffit d'éditer ces textes.
+const DUO_CALL_RULE = {
+    title: "🔔 DUO !",
+    items: [
+        "Quand il ne te reste qu'une seule carte, appuie vite sur le bouton DUO ! pour l'annoncer à tout le monde."
+    ]
+};
+
+const MODE_RULES = {
+    "duo": {
+        title: "🎴 Règles de DUO",
+        sections: [
+            {
+                title: "🎯 But du jeu",
+                items: [
+                    "Chaque joueur reçoit 7 cartes. Le but est de poser toutes tes cartes le plus vite possible.",
+                    "Un joueur qui a posé toutes ses cartes est classé. La partie continue jusqu'à ce qu'il ne reste qu'un seul joueur : c'est le dernier."
+                ]
+            },
+            {
+                title: "🃏 Poser une carte",
+                items: [
+                    "À ton tour, pose une carte de la même couleur, du même chiffre ou du même symbole que la carte sur la table.",
+                    "Aucune carte jouable ? Pioche une carte : tu peux la poser si elle convient, sinon passe ton tour."
+                ]
+            },
+            {
+                title: "⚡ Cartes spéciales",
+                items: [
+                    "🚫 Passe : le joueur suivant passe son tour.",
+                    "🔄 Inversion : le sens du jeu change (à 2 joueurs, elle fait passer le tour de l'adversaire).",
+                    "➕ +2 : le joueur suivant pioche 2 cartes et passe son tour.",
+                    "🌈 Joker : tu peux le poser à tout moment et tu choisis la nouvelle couleur.",
+                    "🌈 Joker +4 : tu choisis la couleur, le joueur suivant pioche 4 cartes et passe son tour. Tu ne peux le jouer que si tu n'as aucune carte de la couleur en cours.",
+                    "Les cartes +2 et +4 ne se cumulent pas."
+                ]
+            },
+            DUO_CALL_RULE
+        ]
+    },
+
+    "duo-no-mercy": {
+        title: "💀 Règles de DUO NO MERCY",
+        sections: [
+            {
+                title: "🎯 But du jeu",
+                items: [
+                    "Chaque joueur reçoit 7 cartes. Le but est de poser toutes tes cartes, mais attention : à 25 cartes ou plus en main, tu es éliminé !",
+                    "Un joueur qui a posé toutes ses cartes est classé. La partie continue jusqu'à ce qu'il ne reste qu'un seul joueur."
+                ]
+            },
+            {
+                title: "🃏 Poser une carte",
+                items: [
+                    "Pose une carte de la même couleur, du même chiffre ou du même symbole que la carte sur la table. Les jokers se posent sur n'importe quelle carte (sauf quand tu subis une attaque, voir plus bas).",
+                    "Pioche : tu ne reçois qu'une seule carte. Si aucune de tes cartes n'est jouable, ton tour passe automatiquement ; sinon tu peux jouer ou passer."
+                ]
+            },
+            {
+                title: "💥 Attaques et cumul",
+                items: [
+                    "Les cartes +2, +4 de couleur, Joker Inversion +4, Joker +6 et Joker +10 font piocher le joueur suivant.",
+                    "Quand tu es attaqué, tu peux contre-attaquer avec une attaque aussi forte ou plus forte : les cartes à piocher s'additionnent et passent au joueur suivant.",
+                    "Si tu ne contre-attaques pas, tu pioches tout le cumul et ton tour est passé.",
+                    "Un +X ne peut jamais être posé sur un +Y plus fort (par exemple, pas de +2 sur un +4).",
+                    "Le Joker Inversion +4 change aussi le sens du jeu ; le +4 de couleur ne le change pas."
+                ]
+            },
+            {
+                title: "⚡ Cartes spéciales",
+                items: [
+                    "🚫 Passe : le joueur suivant passe son tour.",
+                    "🔄 Inversion : le sens du jeu change (à 2 joueurs, elle fait passer le tour de l'adversaire).",
+                    "⏭️ Passe Tout le Monde : tous les autres joueurs sont passés, tu rejoues.",
+                    "🗑️ Défausse Tout : tu défausses toutes tes cartes de la même couleur que cette carte.",
+                    "🎰 Roulette : le joueur suivant choisit une couleur, puis pioche jusqu'à obtenir une carte de cette couleur. Son tour est ensuite passé, et la couleur choisie devient la couleur de la table."
+                ]
+            },
+            {
+                title: "🔀 Les chiffres 7 et 0",
+                items: [
+                    "7 : tu peux échanger ta main avec le joueur de ton choix, ou avec personne.",
+                    "0 : tu peux faire passer toutes les mains au joueur suivant (dans le sens du jeu), ou ne rien faire.",
+                    "Ces effets ne s'appliquent pas quand tu poses ta dernière carte."
+                ]
+            },
+            {
+                title: "💀 La règle de la pitié",
+                items: [
+                    "Dès que tu atteins 25 cartes, tu es éliminé et tes cartes retournent dans la pioche.",
+                    "Un ⚠️ apparaît à côté du nom d'un joueur à partir de 20 cartes."
+                ]
+            },
+            DUO_CALL_RULE
+        ]
+    }
+};
+
+function getRulesPopup() {
+    let popup = document.getElementById("rules-popup");
+    if (popup) return popup;
+
+    popup = document.createElement("div");
+    popup.id = "rules-popup";
+    popup.style.display = "none";
+
+    const content = document.createElement("div");
+    content.id = "rules-popup-content";
+
+    const closeButton = document.createElement("button");
+    closeButton.id = "close-rules-button";
+    closeButton.type = "button";
+    closeButton.textContent = "✕";
+    closeButton.addEventListener("click", hideModeRules);
+
+    const title = document.createElement("h2");
+    title.id = "rules-popup-title";
+
+    const sections = document.createElement("div");
+    sections.id = "rules-popup-sections";
+
+    content.append(closeButton, title, sections);
+    popup.appendChild(content);
+
+    // Cliquer à côté de la fenêtre la ferme
+    popup.addEventListener("click", (event) => {
+        if (event.target === popup) hideModeRules();
+    });
+
+    document.body.appendChild(popup);
+    return popup;
+}
+
+function showModeRules(mode) {
+    const rules = MODE_RULES[mode];
+    if (!rules) return;
+
+    const popup = getRulesPopup();
+    document.getElementById("rules-popup-title").textContent = rules.title;
+
+    const container = document.getElementById("rules-popup-sections");
+    container.innerHTML = "";
+
+    rules.sections.forEach(section => {
+        const sectionElement = document.createElement("section");
+        sectionElement.className = "news-section";
+
+        const heading = document.createElement("h3");
+        heading.textContent = section.title;
+        sectionElement.appendChild(heading);
+
+        const list = document.createElement("ul");
+        section.items.forEach(text => {
+            const item = document.createElement("li");
+            item.textContent = text;
+            list.appendChild(item);
+        });
+        sectionElement.appendChild(list);
+
+        container.appendChild(sectionElement);
+    });
+
+    popup.style.display = "flex";
+    document.getElementById("rules-popup-content").scrollTop = 0;
+}
+
+function hideModeRules() {
+    const popup = document.getElementById("rules-popup");
+    if (popup) popup.style.display = "none";
+}
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") hideModeRules();
+});
+
+// Les boutons "📖 Règles" sont dans le HTML (attribut data-rules = mode)
+document.querySelectorAll("[data-rules]").forEach(button => {
+    button.addEventListener("click", () => showModeRules(button.dataset.rules));
 });
 
 document.getElementById("host-game-button")?.addEventListener("click", async () => {
@@ -1375,6 +1712,7 @@ document.getElementById("confirm-join-room")?.addEventListener("click", async ()
 
 function updateGameInterface(roomStatus) {
     const lobbyContent = document.getElementById("lobby-content");
+    const lobbySetup = document.getElementById("lobby-setup");
     const playerNameContainer = document.getElementById("player-name-container");
     const backHomeButton = document.getElementById("back-home-button");
     const winnerMessage = document.getElementById("winner-message");
@@ -1387,6 +1725,7 @@ function updateGameInterface(roomStatus) {
     // Le sélecteur de couleur ne doit apparaître que sur demande (display: none par défaut en CSS)
     if (roomStatus === "waiting") {
         if (lobbyContent) lobbyContent.style.display = "";
+        if (lobbySetup) lobbySetup.style.display = "";
         if (playerNameContainer) playerNameContainer.style.display = "none";
         if (backHomeButton) backHomeButton.style.display = "";
         if (winnerMessage) winnerMessage.style.display = "none";
@@ -1399,6 +1738,7 @@ function updateGameInterface(roomStatus) {
 
     if (roomStatus === "playing") {
         if (lobbyContent) lobbyContent.style.display = "none";
+        if (lobbySetup) lobbySetup.style.display = "none";
         if (playerNameContainer) playerNameContainer.style.display = "none";
         if (winnerMessage) winnerMessage.style.display = "none";
 
@@ -1410,6 +1750,7 @@ function updateGameInterface(roomStatus) {
 
     if (roomStatus === "finished") {
         if (lobbyContent) lobbyContent.style.display = "none";
+        if (lobbySetup) lobbySetup.style.display = "none";
         if (playerNameContainer) playerNameContainer.style.display = "none";
         if (winnerMessage) winnerMessage.style.display = "flex";
 
@@ -1421,6 +1762,11 @@ function updateGameInterface(roomStatus) {
 }
 
 document.getElementById("back-home-button")?.addEventListener("click", async () => {
+    // Sur mobile, le bouton est proche des cartes : on demande confirmation en pleine partie
+    if (isMobileLayout() && currentRoomStatus === "playing" && !confirm("Quitter la partie en cours ?")) {
+        return;
+    }
+
     const roomCode = currentRoomCode;
 
     // Arrête d'écouter la salle et ma main
@@ -1428,8 +1774,8 @@ document.getElementById("back-home-button")?.addEventListener("click", async () 
     if (unsubscribeHand) { unsubscribeHand(); unsubscribeHand = null; }
 
     document.getElementById("game-interface").style.display = "none";
+    document.body.classList.remove("in-game");
     document.getElementById("home-screen").style.display = "flex";
-    document.getElementById("mode-screen").style.display = "none";
     document.getElementById("connection-screen").style.display = "none";
 
     if (roomCode && playerId) {
@@ -1452,6 +1798,9 @@ document.getElementById("back-home-button")?.addEventListener("click", async () 
     currentRoomCode = null;
     currentGame = null;
     currentGameMode = "duo";
+    currentHostId = null;
+    currentRoomStatus = null;
+    wasMyTurn = false;
     hasDrawnThisTurn = false;
     pendingWildCard = null;
     finishOrder = [];

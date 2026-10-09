@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#6a5acd">
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="images/duo-icon.webp">
     <link rel="stylesheet" href="styles.css">
@@ -105,12 +106,11 @@
         </div>
 
         <p>
-            ⚠️ LE SITE N'EST PAS ENCORE BIEN ADAPTÉ POUR MOBILES ⚠️ <br>
-            ‼️ UN NOUVEAU MODE DE JEU EST DISPONIBLE ‼️
+            ‼️ DUO NO MERCY EST DISPONIBLE ‼️
         </p>
 
-        <button id="choose-mode-button">
-            Choisir le mode de jeu
+        <button id="play-button" type="button">
+            Jouer à DUO !
         </button>
 
     </div>
@@ -130,25 +130,57 @@
             <h2>🆕 Nouveautés</h2>
 
             <p class="news-date">
-                ✨ = Ajouté dans la version actuelle
+                ✨ = Ajouté dans la version actuelle <br>
+                ‼️ Les nouveautés d'une MàJ disparaissent 30 jours après la sortie
             </p>
+
+            <section class="news-section">
+
+                <img src="images/kwadneuf.webp" alt="">
+                <p>v0.4</p>
+
+                <ul>
+                    <li>🌟 EXP dynamique selon la place sur le podium</li>
+                    <li>⭐ Système de niveaux</li>
+                    <li>🎨 Personnalisation des cartes</li>
+                    <li>❓ Explication des règles de jeu</li>
+                    <li>🚪 Bouton "Retour au salon" ajouté en fin de partie</li>
+                    <li>🎮 Choix du mode de jeu directement dans le salon</li>
+                    <li>📱 Site adapté aux mobiles</li>
+                </ul>
+
+            </section>
 
             <section class="news-section">
 
                 <h3>🚀 Version actuelle</h3>
 
-                <p class="news-date">
-                    6 Septembre 2026 - v0.3
-                </p>
-
                 <ul>
+                    <p class="news-date">
+                        10 Octobre 2026 - v0.4
+                    </p>
+                    <li>⭐ Système de niveaux ✨</li>
+                    <li>🎨 Personnalisation des cartes ✨</li>
+                    <li>❓ Explication des règles de jeu ✨</li>
+                    <br>
+                    <p class="news-date">
+                        6 Octobre 2026 - v0.3
+                    </p>
+                    <li>😈 Jeu DUO No Mercy disponible</li>
+                    <br>
+                    <p class="news-date">
+                        5 Octobre 2026 - v0.2
+                    </p>
+                    <li>📢 Écran accueillant les mises à jour.</li>
+                    <br>
+                    <p class="news-date">
+                        28 Septembre 2026 - v0.1
+                    </p>
                     <li>🎴 Jeu DUO original disponible</li>
-                    <li>😈 Jeu DUO No Mercy disponible ✨</li>
                     <li>👥 Parties multijoueurs synchronisées</li>
                     <li>📊 Comptage des cartes des adversaires</li>
                     <li>🏆 Classement final des joueurs</li>
                     <li>🏠 Retour à l'accueil depuis une partie</li>
-                    <li>📢 Écran accueillant les mises à jour.</li>
                 </ul>
 
             </section>
@@ -158,11 +190,26 @@
                 <h3>✨ Améliorations récentes</h3>
 
                 <ul>
+                    <p class="news-date">
+                        10 Octobre 2026 - v0.4
+                    </p>
+                    <li>🌟 EXP dynamique selon la place sur le podium ✨</li>
+                    <li>🚪 Bouton "Retour au salon" ajouté en fin de partie ✨</li>
+                    <li>🎮 Choix du mode de jeu directement dans le salon ✨</li>
+                    <li>📱 Site adapté aux mobiles ✨</li>
+                    <br>
+                    <p class="news-date">
+                        6 Octobre 2026 - v0.3
+                    </p>
+                    <li>💾 Amélioration du système de parties</li>
+                    <br>
+                    <p class="news-date">
+                        5 Octobre 2026 - v0.2
+                    </p>
+                    <li>📝 Sauvegarde de pseudo</li>
                     <li>🎯 Système DUO amélioré</li>
                     <li>🔔 Annonces DUO synchronisées entre les joueurs</li>
                     <li>🔁 Possibilité de relancer une partie terminée</li>
-                    <li>📝 Sauvegarde de pseudo</li>
-                    <li>💾 Amélioration du système de parties ✨</li>
                 </ul>
 
             </section>
@@ -172,6 +219,9 @@
                 <h3>👾 Bugs réglés</h3>
 
                 <ul>
+                    <p class="news-date">
+                        5 Octobre 2026 - v0.2
+                    </p>
                     <li>🃏 Impossibilité de jouer lorsque la première carte est un joker</li>
                     <li>🎴 Ajout d'un +4 au joueur suivant lorsqu'une carte +2 est jouée</li>
                 </ul>
@@ -187,13 +237,13 @@
                 </p>
 
                 <ul>
-                    <li>👥 Liste d'amis ✨</li>
-                    <li>❓ Explication des règles de jeu ✨</li>
-                    <li>🖌️ Personnalisation des cartes</li>
-                    <li>📱 Optimisations pour mobile</li>
-                    <li>⚙️ Configuration de partie</li>
-                    <li>🎨 Améliorations de l'interface</li>
                     <li>🎮 Nouveaux modes de jeu</li>
+                    <li>🏆 Système de succès ✨</li>
+                    <li>🪙 Boutique pour Points DUO ✨</li>
+                    <li>🎨 Nouveaux skins de cartes ✨</li>
+                    <li>👥 Liste d'amis</li>
+                    <li>⚙️ Configuration de partie</li>
+                    <li>🖥️ Améliorations de l'interface</li>
                     <li>🔔 Sons améliorés</li>
                 </ul>
 
@@ -214,52 +264,39 @@
 
 
     <!-- ========================= -->
-    <!-- CHOIX DU MODE DE JEU -->
-    <!-- ========================= -->
-
-    <div id="mode-screen" style="display: none;">
-
-        <h2>Choisir le mode de jeu</h2>
-
-        <div id="game-modes">
-
-            <button id="duo-mode-button">
-                <img src="images/duo-logo.webp" alt="DUO">
-            </button>
-
-            <button id="no-mercy-mode-button">
-                <img src="images/duo-no-mercy.webp" alt="DUO NO MERCY">
-
-                <span>NOUVEAU !</span>
-            </button>
-
-        </div>
-
-    </div>
-
-
-    <!-- ========================= -->
-    <!-- HÉBERGER / REJOINDRE -->
+    <!-- CRÉER / REJOINDRE UNE PARTIE -->
     <!-- ========================= -->
 
     <div id="connection-screen" style="display: none;">
 
         <div id="home-logo">
-            <img src="images/duo-logo.webp" id="current-game-mode-logo" alt="DUO">
+            <img src="images/duo-logo.webp" alt="DUO">
         </div>
 
-        <button id="host-game-button">
-            Héberger
-        </button>
+        <div id="connection-card">
 
-        <p id="connection-or">ou</p>
+            <button id="host-game-button" type="button">
+                ➕ Créer une partie
+            </button>
 
-        <input id="room-code" type="text" placeholder="Code du salon" maxlength="6">
+            <p id="connection-or">ou</p>
 
-        <p id="room-code-message"></p>
+            <div id="join-row">
 
-        <button id="confirm-join-room">
-            Rejoindre
+                <input id="room-code" type="text" placeholder="Code du salon" maxlength="6" autocomplete="off">
+
+                <button id="confirm-join-room" type="button">
+                    Rejoindre
+                </button>
+
+            </div>
+
+            <p id="room-code-message"></p>
+
+        </div>
+
+        <button id="connection-back-button" type="button">
+            ← Retour
         </button>
 
     </div>
@@ -279,11 +316,15 @@
 
             <h1 id="lobby-title">Salon de jeu</h1>
 
-            <h2 id="room-info"></h2>
+            <div id="room-code-row">
 
-            <button id="start-game">
-                Lancer la partie
-            </button>
+                <h2 id="room-info"></h2>
+
+                <button id="copy-room-code-button" type="button" title="Copier le code du salon">
+                    📋
+                </button>
+
+            </div>
 
         </div>
 
@@ -291,6 +332,73 @@
         <h3>Joueurs</h3>
 
         <ul id="players-list"></ul>
+
+
+        <!-- Choix du mode (modifiable par l'hôte) + lancement -->
+
+        <div id="lobby-setup">
+
+            <section id="lobby-mode-section">
+
+                <h3 id="lobby-mode-title">🎮 Mode de jeu</h3>
+
+                <p id="lobby-mode-hint"></p>
+
+                <div id="lobby-modes">
+
+                    <div class="mode-card" data-mode="duo">
+
+                        <button type="button" class="mode-card-select" data-mode="duo">
+                            <img src="images/duo-logo.webp" alt="DUO">
+                            <span class="mode-card-name">DUO</span>
+                            <span class="mode-card-description">Le jeu original : vide ta main avant les autres.</span>
+                            <span class="mode-card-badge">✓ Mode choisi</span>
+                        </button>
+
+                        <button type="button" class="rules-button" data-rules="duo">
+                            📖 Règles
+                        </button>
+
+                    </div>
+
+                    <div class="mode-card" data-mode="duo-no-mercy">
+
+                        <button type="button" class="mode-card-select" data-mode="duo-no-mercy">
+                            <img src="images/duo-no-mercy.webp" alt="DUO NO MERCY">
+                            <span class="mode-card-name">DUO No Mercy</span>
+                            <span class="mode-card-description">Attaques cumulables, 7 et 0, et élimination à 25 cartes.</span>
+                            <span class="mode-card-badge">✓ Mode choisi</span>
+                        </button>
+
+                        <button type="button" class="rules-button" data-rules="duo-no-mercy">
+                            📖 Règles
+                        </button>
+
+                    </div>
+
+                    <div class="mode-card">
+
+                        <button type="button" class="mode-card-select" disabled>
+                            <img src="images/duo-flip.webp" alt="DUO FLEX">
+                            <span class="mode-card-name">DUO Flip!</span>
+                            <span class="mode-card-description">EN DÉVELOPPEMENT</span>
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <button id="start-game">
+                Lancer la partie
+            </button>
+
+            <p id="waiting-for-host" style="display: none;">
+                ⏳ En attente de l'hôte pour lancer la partie…
+            </p>
+
+        </div>
 
 
         <div id="game-content">
@@ -398,9 +506,21 @@
 
                     <div id="final-ranking"></div>
 
-                    <button id="restart-game" style="display: none;">
-                        🔄 Relancer
-                    </button>
+                    <div id="winner-actions" style="display: none;">
+
+                        <button id="restart-game" type="button" style="display: none;">
+                            🔄 Relancer
+                        </button>
+
+                        <button id="back-to-lobby-button" type="button" style="display: none;">
+                            🚪 Retour au salon
+                        </button>
+
+                    </div>
+
+                    <p id="winner-waiting-host" style="display: none;">
+                        ⏳ L'hôte peut relancer la partie ou retourner au salon.
+                    </p>
 
                 </div>
 
