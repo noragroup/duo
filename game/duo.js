@@ -1,4 +1,10 @@
 // duo.js - Logique et règles du mode DUO
+//
+// Règles : voir la fenêtre "Règles" du jeu. Le Joker +4 se joue à tout moment.
+// Chaque carte jouée laisse un "événement" (game.lastEvent) que le jeu affiche
+// sous forme de petite bulle à tous les joueurs ("Joueur2 se prend +4"...).
+
+const COLORS = ["red", "blue", "green", "yellow"];
 
 export function createDeck() {
     const deck = [];
@@ -51,11 +57,9 @@ export function canPlayCard(card, topCard, currentColor, hand) {
         return true;
     }
 
+    // Le Joker +4 se joue à tout moment (même si on a une carte de la couleur en cours)
     if (card.type === "draw4") {
-        const hasMatchingColor = hand.some(
-            handCard => handCard.color === currentColor
-        );
-        return !hasMatchingColor;
+        return true;
     }
 
     if (card.color === currentColor) {
@@ -140,6 +144,7 @@ export function createGameState(playerIds) {
     shuffleDeck(result.remainingDeck);
 
     return {
+        order: [...playerIds],    // ordre des places, ne change jamais (voir duo-no-mercy.js)
         hands: result.hands,
         deck: result.remainingDeck,
         discardPile: [firstCard],
@@ -150,7 +155,8 @@ export function createGameState(playerIds) {
         unoRequired: {},
         lastDraw4Player: null,
         draw4PreviousColor: null,
-        draw4TargetPlayer: null
+        draw4TargetPlayer: null,
+        lastEvent: null           // dernier effet de carte, affiché en bulle à tous les joueurs
     };
 }
 
@@ -175,7 +181,32 @@ export function isTwoPlayerGame(game) {
     return Object.keys(game.hands || {}).length === 2;
 }
 
-export function playCard(game, playerId, cardId, playerIds, finishOrder = []) {
+// Cette carte demande-t-elle de choisir une couleur ?
+export function needsColorChoice(card) {
+    return card.type === "wild" || card.type === "draw4";
+}
+
+// Fait piocher `count` cartes à un joueur (la défausse est recyclée si la pioche est vide).
+// Retourne le nombre de cartes réellement piochées.
+function drawCardsFor(game, playerId, count) {
+    let drawn = 0;
+
+    for (let i = 0; i < count; i++) {
+        if (game.deck.length === 0) recycleDiscardPile(game);
+        if (game.deck.length === 0) break;
+
+        game.hands[playerId].push(game.deck.pop());
+        drawn++;
+    }
+
+    delete game.unoCalled[playerId];
+    delete game.unoRequired[playerId];
+
+    return drawn;
+}
+
+// options.color : couleur choisie (obligatoire pour le Joker et le Joker +4)
+export function playCard(game, playerId, cardId, playerIds, finishOrder = [], options = {}) {
     if (!isMyTurn(game, playerId)) return false;
 
     const hand = game.hands[playerId];
@@ -189,6 +220,13 @@ export function playCard(game, playerId, cardId, playerIds, finishOrder = []) {
         return false;
     }
 
+    // Joker : la couleur est obligatoire (vérifiée avant de modifier quoi que ce soit)
+    if (needsColorChoice(card) && !COLORS.includes(options.color)) {
+        return false;
+    }
+
+    const previousColor = game.currentColor;
+
     hand.splice(cardIndex, 1);
     game.discardPile.push(card);
 
@@ -199,11 +237,21 @@ export function playCard(game, playerId, cardId, playerIds, finishOrder = []) {
 
     if (card.color) {
         game.currentColor = card.color;
+    } else if (options.color) {
+        game.currentColor = options.color;
     }
+
+    // Événement affiché en bulle à tous les joueurs
+    game.lastEvent = {
+        type: card.type,
+        playerId: playerId,
+        color: needsColorChoice(card) ? game.currentColor : null,
+        timestamp: Date.now()
+    };
 
     if (card.type === "draw4") {
         game.lastDraw4Player = playerId;
-        game.draw4PreviousColor = game.currentColor;
+        game.draw4PreviousColor = previousColor;
         game.draw4TargetPlayer = game.currentPlayer;
     }
 
@@ -214,19 +262,16 @@ export function playCard(game, playerId, cardId, playerIds, finishOrder = []) {
     nextPlayer(game, playerIds, finishOrder);
 
     if (card.type === "skip" || (card.type === "reverse" && isTwoPlayerGame(game))) {
+        game.lastEvent.targetPlayerId = game.currentPlayer; // le joueur dont le tour est passé
         nextPlayer(game, playerIds, finishOrder);
     }
 
-    if (card.type === "draw2") {
-        const nextPlayerId = game.currentPlayer;
+    if (card.type === "draw2" || card.type === "draw4") {
+        const targetId = game.currentPlayer;
+        const amount = card.type === "draw2" ? 2 : 4;
 
-        for (let i = 0; i < 2; i++) {
-            if (game.deck.length === 0) recycleDiscardPile(game);
-            if (game.deck.length === 0) break;
-
-            const drawnCard = game.deck.pop();
-            game.hands[nextPlayerId].push(drawnCard);
-        }
+        game.lastEvent.targetPlayerId = targetId;
+        game.lastEvent.count = drawCardsFor(game, targetId, amount);
 
         nextPlayer(game, playerIds, finishOrder);
     }

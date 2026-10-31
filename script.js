@@ -1,4 +1,4 @@
-let currentVersion = "DUO v0.4.1";
+let currentVersion = "DUO v0.5.0";
 
 document.getElementById("version-text").textContent = currentVersion;
 
@@ -14,20 +14,20 @@ import {
     runTransaction
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
-import {
-    getAuth,
-    signInAnonymously
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 // Les deux moteurs de règles : le mode de la salle décide lequel est utilisé
 import * as duoRules from "./game/duo.js";
 import * as noMercyRules from "./game/duo-no-mercy.js";
 
 // Skins de cartes (paquets) + barre de personnalisation
-import { getCardImagePath, initSkinSidebar } from "./skins.js";
+import { getCardImagePath, initSkinSidebar, isSkinNegative, SKINS, DECKS } from "./skins.js";
 
 // Niveaux, EXP et récompenses de fin de partie
-import { initProgress, handleRoomProgress, getServerTime } from "./progress.js";
+import { initProgress, handleRoomProgress, getServerTime, recordFriendsCount } from "./progress.js";
+
+// Comptes : connexion e-mail / Google pour retrouver sa progression sur tous ses appareils
+import { initAccount, renderAccountBanner, pushEquippedSkins } from "./account.js";
 
 let playerId = null;
 let currentRoomCode = null;
@@ -115,10 +115,23 @@ function applyModeUI() {
 }
 
 // Ordre des places : stable en No Mercy (game.order), sinon les joueurs ayant une main
+// Firebase trie les clés d'un objet par ordre alphabétique (pas par ordre d'arrivée) :
+// sans "order", le même joueur commencerait toujours en premier. On mémorise donc
+// l'ordre (mélangé au hasard) choisi au lancement de la partie, pour les deux modes.
 function getPlayerIds() {
     if (!currentGame) return [];
-    if (isNoMercy() && currentGame.order) return currentGame.order;
-    return Object.keys(currentGame.hands || {});
+    if (currentGame.order) return currentGame.order;
+    return Object.keys(currentGame.hands || {}); // parties lancées avant ce correctif
+}
+
+// Mélange aléatoirement un tableau (Fisher-Yates), sans modifier l'original
+function shuffleArray(array) {
+    const result = [...array];
+    for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
 }
 
 // Joueurs encore en lice (ni terminés, ni éliminés)
@@ -188,10 +201,14 @@ async function saveGame(extra = {}) {
 document.getElementById("start-game")?.addEventListener("click", startGame);
 document.getElementById("restart-game")?.addEventListener("click", startGame);
 
-signInAnonymously(auth)
-    .then(async userCredential => {
-        playerId = userCredential.user.uid;
+// Connexion : account.js restaure le compte (ou crée un compte invité), puis appelle onUser
+initAccount({
+    auth,
+    db,
+    onUser: async (user) => {
+        playerId = user.uid;
         initProgress({ db, playerId });
+        renderAccountBanner();
         const savedName = localStorage.getItem("duo-player-name") || "Joueur";
 
         const profileElem = document.getElementById("player-profile-username");
@@ -208,11 +225,11 @@ signInAnonymously(auth)
 
         await update(ref(db, `users/${playerId}`), { username: savedName });
         document.getElementById("status").textContent = "Connecté à Firebase";
-    })
-    .catch((error) => {
-        console.error("Erreur de connexion :", error);
-        document.getElementById("status").textContent = "Erreur de connexion";
-    });
+    }
+}).catch((error) => {
+    console.error("Erreur de connexion :", error);
+    document.getElementById("status").textContent = "Erreur de connexion";
+});
 
 function generateRoomCode() {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -399,7 +416,7 @@ function listenToRoom() {
         finishOrder = room.finishOrder || [];
 
         // Fin de partie : attribue l'EXP (une seule fois par partie)
-        handleRoomProgress(room, playerId);
+        handleRoomProgress(room, playerId, currentGameMode);
 
         if (room.status === "finished") {
             displayFinalRanking(room);
@@ -492,7 +509,9 @@ function listenToRoom() {
                     delete currentGame.unoRequired[leftPlayerId];
                 }
 
-                const remainingPlayerIds = Object.keys(currentGame.hands);
+                // On garde l'ordre de placement d'origine (getPlayerIds), pas l'ordre alphabétique
+                // de Firebase, sinon le calcul du tour suivant serait décalé par rapport à la vraie table
+                const remainingPlayerIds = getPlayerIds().filter(id => currentGame.hands[id]);
 
                 // Si le joueur qui devait choisir la couleur est parti, la roulette est annulée
                 const rouletteCancelled = !!currentGame.pendingRoulette
@@ -567,36 +586,114 @@ function listenToRoom() {
 // AFFICHAGE : JOUEURS, CLASSEMENT, MESSAGES
 // ===========================================================================
 
+// Joueur qui jouera juste après le joueur actuel (null s'il n'y en a pas)
+function getNextPlayerId() {
+    if (!currentGame?.currentPlayer || currentRoomStatus === "finished") return null;
+
+    // On calcule sur une copie : nextPlayer() modifie le joueur courant
+    const probe = { ...currentGame };
+    getRules().nextPlayer(probe, getPlayerIds(), finishOrder);
+
+    return probe.currentPlayer !== currentGame.currentPlayer ? probe.currentPlayer : null;
+}
+
+function refreshPlayersList() {
+    displayPlayers(roomPlayers, currentHostId);
+}
+
+// Signaux "c'est à toi" : halo doré autour de l'écran (classe sur le body) et titre de l'onglet
+function updateTurnIndicators(isMyTurn) {
+    document.body.classList.toggle("my-turn", !!isMyTurn);
+    document.title = isMyTurn ? "🟢 À toi de jouer ! · DUO" : "DUO";
+}
+
+const PLACE_BADGES = ["🥇 1er", "🥈 2e", "🥉 3e"];
+
 function displayPlayers(players, hostId) {
     const list = document.getElementById("players-list");
     if (!list) return;
+
     list.innerHTML = "";
+    list.classList.remove("turn-rail");
+    delete list.dataset.direction;
 
     if (!players) return;
 
+    // Salon : simple liste des joueurs
+    if (!currentGame) {
+        Object.entries(players).forEach(([id, player]) => {
+            const li = document.createElement("li");
+            li.textContent = `${id === hostId ? "👑 " : ""}${player.name}`;
+            list.appendChild(li);
+        });
+        return;
+    }
+
+    // Partie : "rail" des joueurs avec qui joue, qui joue ensuite, le sens du jeu
+    const finished = currentRoomStatus === "finished";
+    const nextId = finished ? null : getNextPlayerId();
+    const playerIds = getPlayerIds();
+
+    list.classList.add("turn-rail");
+
+    // Le sens du jeu n'a d'intérêt qu'à partir de 3 joueurs encore en lice
+    if (!finished && getRemainingPlayers(playerIds).length >= 3) {
+        list.dataset.direction = currentGame.direction === -1 ? "backward" : "forward";
+    }
+
     Object.entries(players).forEach(([id, player]) => {
-        const li = document.createElement("li");
-        if (currentGame && currentGame.currentPlayer === id) {
-            li.classList.add("current-player");
-        }
+        const hand = currentGame.hands?.[id];
+        const eliminated = !!currentGame.eliminated?.includes(id);
+        const rank = finishOrder.indexOf(id);
 
-        let prefix = id === hostId ? "👑 " : "";
-        if (currentGame && currentGame.currentPlayer === id) prefix += "🟢 ";
+        const isCurrent = !finished && !eliminated && rank === -1 && currentGame.currentPlayer === id;
+        const isNext = !finished && id === nextId;
 
-        let status = "";
-        const hand = currentGame?.hands?.[id];
+        // Badge au-dessus du nom
+        let badge = "";
+        if (eliminated) badge = "💀 Éliminé";
+        else if (rank >= 0) badge = PLACE_BADGES[rank] || `🏅 ${rank + 1}e`;
+        else if (isCurrent) badge = "🟢 Joue";
+        else if (isNext) badge = "⏭️ Prochain";
 
-        if (currentGame?.eliminated?.includes(id)) {
-            status = " — 💀 éliminé";
+        // Nombre de cartes
+        let cards;
+        if (eliminated) {
+            cards = "—";
+        } else if (rank >= 0 && !(hand && hand.length > 0)) {
+            cards = "terminé";
         } else if (hand) {
-            status = ` — ${hand.length} carte(s)`;
+            cards = `${hand.length} carte${hand.length > 1 ? "s" : ""}`;
             // Avertissement quand on approche de la limite de la pitié
-            if (isNoMercy() && hand.length >= noMercyRules.RULES.mercyLimit - 5) status += " ⚠️";
-        } else if (currentGame && finishOrder.includes(id)) {
-            status = " — ✅ terminé";
+            if (isNoMercy() && hand.length >= noMercyRules.RULES.mercyLimit - 5) cards += " ⚠️";
+        } else {
+            cards = "—";
         }
 
-        li.textContent = `${prefix}${player.name}${status}`;
+        const li = document.createElement("li");
+        li.className = "turn-chip";
+        if (isCurrent) {
+            li.classList.add("current");
+            li.setAttribute("aria-current", "true");
+        }
+        if (isNext) li.classList.add("next");
+        if (id === playerId) li.classList.add("me");
+        if (eliminated || (rank >= 0 && !finished)) li.classList.add("done");
+        if (finished && rank === 0) li.classList.add("winner");
+
+        const badgeElement = document.createElement("span");
+        badgeElement.className = "turn-chip-badge";
+        badgeElement.textContent = badge;
+
+        const nameElement = document.createElement("span");
+        nameElement.className = "turn-chip-name";
+        nameElement.textContent = `${id === hostId ? "👑 " : ""}${player.name}${id === playerId ? " (toi)" : ""}`;
+
+        const cardsElement = document.createElement("span");
+        cardsElement.className = "turn-chip-cards";
+        cardsElement.textContent = cards;
+
+        li.append(badgeElement, nameElement, cardsElement);
         list.appendChild(li);
     });
 }
@@ -682,10 +779,35 @@ function showToast(message) {
     toastTimeout = setTimeout(() => { toast.style.opacity = "0"; }, 3000);
 }
 
+const COLOR_NAMES = { red: "rouge", blue: "bleu", green: "vert", yellow: "jaune" };
+
 function describeGameEvent(event, game) {
     const name = getPlayerName(event.playerId);
     const target = event.targetPlayerId ? getPlayerName(event.targetPlayerId) : "";
 
+    // DUO classique
+    if (!isNoMercy()) {
+        const colorName = COLOR_NAMES[event.color] || "";
+
+        switch (event.type) {
+            case "skip":
+                return `🚫 ${name} fait passer le tour de ${target}`;
+            case "reverse":
+                return target
+                    ? `🔄 ${name} inverse le sens : ${target} passe son tour`
+                    : `🔄 ${name} inverse le sens du jeu`;
+            case "draw2":
+                return `➕ ${target} se prend +${event.count ?? 2} (${name}) et passe son tour`;
+            case "draw4":
+                return `🌈 ${target} se prend +${event.count ?? 4} (${name}) et passe son tour${colorName ? ` · couleur : ${colorName}` : ""}`;
+            case "wild":
+                return `🌈 ${name} choisit la couleur ${colorName}`;
+            default:
+                return null;
+        }
+    }
+
+    // DUO No Mercy
     switch (event.type) {
         case "draw":
             return event.count > 1 ? `📥 ${name} pioche ${event.count} cartes` : null;
@@ -749,7 +871,9 @@ async function startGame() {
 
     if (room.mode) currentGameMode = room.mode;
 
-    const playerIds = Object.keys(room.players || {});
+    // Ordre mélangé au hasard : sinon Firebase renvoie toujours le même ordre
+    // (alphabétique) et c'est toujours le même joueur qui commence.
+    const playerIds = shuffleArray(Object.keys(room.players || {}));
     const game = getRules().createGameState(playerIds);
     finishOrder = [];
     hasDrawnThisTurn = false;
@@ -820,6 +944,30 @@ function cardNeedsRotate(card) {
     return noMercyRules.needsRotateChoice(currentGame, playerId, card, getPlayerIds(), finishOrder);
 }
 
+// Tri de la main : d'abord par couleur (rouge, bleu, vert, jaune, puis les cartes sans
+// couleur comme les jokers), puis par valeur/type à l'intérieur d'une même couleur.
+// C'est un tri purement visuel : il ne modifie jamais la main envoyée par le serveur.
+const HAND_COLOR_ORDER = { red: 0, blue: 1, green: 2, yellow: 3 };
+const HAND_TYPE_ORDER = {
+    skip: 10, reverse: 11, draw2: 12,       // cartes "+X / action" de couleur
+    draw4_color: 13, discard_all: 14, skip_all: 15, // cartes spéciales No Mercy de couleur
+    wild: 100, draw4: 101, draw6: 102, draw10: 103, roulette: 104 // jokers (sans couleur)
+};
+
+function getHandSortKey(card) {
+    const colorRank = card.color != null ? (HAND_COLOR_ORDER[card.color] ?? 9) : 9;
+    const typeRank = card.type === "number" ? (card.value ?? 0) : (HAND_TYPE_ORDER[card.type] ?? 50);
+    return [colorRank, typeRank];
+}
+
+function sortHandForDisplay(hand) {
+    return [...hand].sort((a, b) => {
+        const [colorA, typeA] = getHandSortKey(a);
+        const [colorB, typeB] = getHandSortKey(b);
+        return colorA - colorB || typeA - typeB;
+    });
+}
+
 function displayMyHand(hand) {
     const container = document.getElementById("my-hand");
     const title = document.getElementById("my-hand-title");
@@ -840,7 +988,9 @@ function displayMyHand(hand) {
         title.textContent = `Ma main — ${hand.length} carte${hand.length > 1 ? "s" : ""}`;
     }
 
-    hand.forEach(card => {
+    const sortedHand = sortHandForDisplay(hand);
+
+    sortedHand.forEach(card => {
         const imagePath = getCardImage(card);
         const cardElement = document.createElement("img");
         cardElement.src = imagePath;
@@ -899,23 +1049,9 @@ async function playSelectedCard(card, options = {}) {
     const rules = getRules();
     const playerIds = getPlayerIds();
 
+    // (options.color : couleur choisie pour un joker ; options.targetPlayerId : cible du 7 en No Mercy...)
     const success = rules.playCard(currentGame, playerId, card.id, playerIds, finishOrder, options);
     if (!success) return false;
-
-    // DUO classique : le +4 et la couleur choisie sont gérés ici
-    if (!isNoMercy()) {
-        if (card.type === "draw4") {
-            const nextPlayerId = currentGame.currentPlayer;
-            for (let i = 0; i < 4; i++) {
-                if (currentGame.deck.length === 0) duoRules.recycleDiscardPile(currentGame);
-                if (currentGame.deck.length === 0) break;
-                currentGame.hands[nextPlayerId].push(currentGame.deck.pop());
-            }
-            duoRules.nextPlayer(currentGame, playerIds, finishOrder);
-        }
-
-        if (options.color) currentGame.currentColor = options.color;
-    }
 
     playCardSound();
     hasDrawnThisTurn = false;
@@ -1009,10 +1145,19 @@ function refreshCardImages() {
     if (pile?.length) {
         displayDiscardCard(pile[pile.length - 1]);
     }
+
+    // Le fond suit la couleur en cours : si on vient d'équiper/retirer un skin négatif, il doit s'inverser aussi
+    updateBackgroundColor();
+    updateColorChoiceButtons();
 }
 
 // Barre de personnalisation à droite de l'écran
-initSkinSidebar({ onChange: refreshCardImages });
+initSkinSidebar({
+    onChange: () => {
+        refreshCardImages();
+        pushEquippedSkins(); // les skins équipés suivent le compte sur tous les appareils
+    }
+});
 
 function displayDiscardCard(card) {
     const container = document.getElementById("discard-pile");
@@ -1028,6 +1173,13 @@ function displayDiscardCard(card) {
     container.appendChild(cardElement);
 }
 
+// Inverse une couleur hexadécimale (#rrggbb -> couleur "négative")
+function invertHexColor(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    const inverted = 0xffffff - n;
+    return `#${inverted.toString(16).padStart(6, "0")}`;
+}
+
 function updateBackgroundColor() {
     let startColor = "#6a5acd";
     let endColor = "#00bcd4";
@@ -1036,6 +1188,12 @@ function updateBackgroundColor() {
     if (currentGame?.currentColor === "blue") { startColor = "#0a4cda"; endColor = "#2958f1"; }
     if (currentGame?.currentColor === "green") { startColor = "#209425"; endColor = "#57dd5e"; }
     if (currentGame?.currentColor === "yellow") { startColor = "#b48305"; endColor = "#e0b423"; }
+
+    // Skin "négatif" équipé pour ce mode : le fond suit aussi, en couleurs inversées
+    if (isSkinNegative(currentGameMode)) {
+        startColor = invertHexColor(startColor);
+        endColor = invertHexColor(endColor);
+    }
 
     document.body.style.setProperty("--game-start", startColor);
     document.body.style.setProperty("--game-end", endColor);
@@ -1142,41 +1300,58 @@ function displayTurnInfo() {
     if (!currentGame) {
         element.textContent = "";
         element.className = "";
+        updateTurnIndicators(false);
         return;
     }
 
     const stack = currentGame.stackCount || 0;
-
-    if (isEliminated()) {
-        element.textContent = "💀 Tu as été éliminé... Tu regardes la fin de la partie.";
-        element.className = "other-turn";
-        return;
-    }
+    const currentId = currentGame.currentPlayer;
+    const currentName = getPlayerName(currentId);
+    const finished = currentRoomStatus === "finished";
+    const nextId = getNextPlayerId();
 
     const roulettePending = isNoMercy() && !!currentGame.pendingRoulette
-        && currentGame.pendingRoulette.playerId === currentGame.currentPlayer;
+        && currentGame.pendingRoulette.playerId === currentId;
 
-    if (roulettePending) {
-        element.textContent = currentGame.currentPlayer === playerId
+    let message;
+    let className = "other-turn";
+    let isMyTurn = false;
+
+    if (finished) {
+        message = "🏁 Partie terminée";
+    } else if (isEliminated()) {
+        message = "💀 Tu as été éliminé... Tu regardes la fin de la partie.";
+    } else if (finishOrder.includes(playerId)) {
+        message = `✅ Tu as terminé ! C'est au tour de ${currentName}`;
+    } else if (roulettePending) {
+        isMyTurn = currentId === playerId;
+        message = isMyTurn
             ? "🎰 Roulette ! Choisis une couleur"
-            : `🎰 ${getPlayerName(currentGame.currentPlayer)} choisit une couleur (Roulette)`;
-        element.className = currentGame.currentPlayer === playerId ? "my-turn" : "other-turn";
-        return;
+            : `🎰 ${currentName} choisit une couleur (Roulette)`;
+        className = isMyTurn ? "my-turn" : "other-turn";
+    } else if (currentId === playerId) {
+        isMyTurn = true;
+        message = isNoMercy() && stack > 0
+            ? `💥 Attaque ! Contre-attaque ou pioche ${stack} cartes`
+            : "🟢 C'est ton tour !";
+        className = "my-turn";
+    } else {
+        // Pas mon tour : on dit qui joue, et qui joue ensuite (moi, si je suis le prochain)
+        const iAmNext = nextId === playerId;
+
+        message = `⏳ C'est au tour de ${currentName}`;
+        if (iAmNext) message += " — tu joues juste après !";
+        else if (nextId) message += ` · ensuite : ${getPlayerName(nextId)}`;
+        if (isNoMercy() && stack > 0) message += ` (cumul : +${stack})`;
+
+        if (iAmNext) className = "other-turn next-turn";
     }
 
-    if (currentGame.currentPlayer === playerId) {
-        if (isNoMercy() && stack > 0) {
-            element.textContent = `💥 Attaque ! Contre-attaque ou pioche ${stack} cartes`;
-        } else {
-            element.textContent = "🟢 C'est ton tour !";
-        }
-        element.className = "my-turn";
-    } else {
-        element.textContent = isNoMercy() && stack > 0
-            ? `⏳ Ce n'est pas ton tour... (cumul : +${stack})`
-            : "⏳ Ce n'est pas ton tour...";
-        element.className = "other-turn";
-    }
+    element.textContent = message;
+    element.className = className;
+
+    updateTurnIndicators(isMyTurn);
+    refreshPlayersList();
 }
 
 function updateGameButtons() {
@@ -1229,10 +1404,29 @@ function updateUnoButton() {
 // true quand le joueur doit choisir la couleur d'une Roulette posée juste avant lui
 let rouletteChoiceActive = false;
 
+// Skin "négatif" équipé : les boutons de couleur affichent le nom de la couleur
+// inversée au lieu du rond de couleur habituel (🔴 -> "BLEU CLAIR", etc.)
+const NEGATIVE_COLOR_LABELS = { red: "ROUGE", blue: "BLEU", green: "VERT", yellow: "JAUNE" };
+const NORMAL_COLOR_EMOJIS = { red: "🔴", blue: "🔵", green: "🟢", yellow: "🟡" };
+
+function updateColorChoiceButtons() {
+    const container = document.getElementById("color-choice-buttons");
+    if (!container) return;
+
+    const negative = isSkinNegative(currentGameMode);
+    container.classList.toggle("negative", negative);
+
+    container.querySelectorAll("button[data-color]").forEach(button => {
+        const color = button.dataset.color;
+        button.textContent = negative ? NEGATIVE_COLOR_LABELS[color] : NORMAL_COLOR_EMOJIS[color];
+    });
+}
+
 function showColorChoice(message = "Choisis une couleur") {
     const colorChoice = document.getElementById("color-choice");
     const text = document.querySelector("#color-choice-box p");
     if (text) text.textContent = message;
+    updateColorChoiceButtons();
     if (colorChoice) colorChoice.style.display = "flex";
 }
 
@@ -1423,10 +1617,11 @@ function showRotateChoice(card) {
 // Le toucher est "avalé" pour ne pas jouer par erreur une carte située derrière.
 document.addEventListener("click", (event) => {
     if (!isMobileLayout()) return;
+    if (!event.isTrusted) return; // clics déclenchés par le code (ex : lien vers la boutique) : on les laisse passer
     // la pastille ouvre la fenêtre Niveaux ; les fenêtres au premier plan gardent leurs propres boutons
-    if (event.target.closest("#level-chip, #winner-message, #color-choice, #choice-modal, #rules-popup, #news-popup")) return;
+    if (event.target.closest("#level-chip, #winner-message, #color-choice, #choice-modal, #rules-popup, #news-popup, #account-popup, #achievements-popup")) return;
 
-    const outside = [...document.querySelectorAll("#skin-sidebar.open, #levels-sidebar.open")]
+    const outside = [...document.querySelectorAll("#skin-sidebar.open, #levels-sidebar.open, #shop-sidebar.open")]
         .filter(sidebar => !sidebar.contains(event.target));
     if (outside.length === 0) return;
 
@@ -1543,7 +1738,7 @@ const MODE_RULES = {
                     "🔄 Inversion : le sens du jeu change (à 2 joueurs, elle fait passer le tour de l'adversaire).",
                     "➕ +2 : le joueur suivant pioche 2 cartes et passe son tour.",
                     "🌈 Joker : tu peux le poser à tout moment et tu choisis la nouvelle couleur.",
-                    "🌈 Joker +4 : tu choisis la couleur, le joueur suivant pioche 4 cartes et passe son tour. Tu ne peux le jouer que si tu n'as aucune carte de la couleur en cours.",
+                    "🌈 Joker +4 : tu peux le jouer à tout moment. Tu choisis la couleur, le joueur suivant pioche 4 cartes et passe son tour.",
                     "Les cartes +2 et +4 ne se cumulent pas."
                 ]
             },
@@ -1574,7 +1769,7 @@ const MODE_RULES = {
                     "Les cartes +2, +4 de couleur, Joker Inversion +4, Joker +6 et Joker +10 font piocher le joueur suivant.",
                     "Quand tu es attaqué, tu peux contre-attaquer avec une attaque aussi forte ou plus forte : les cartes à piocher s'additionnent et passent au joueur suivant.",
                     "Si tu ne contre-attaques pas, tu pioches tout le cumul et ton tour est passé.",
-                    "Un +X ne peut jamais être posé sur un +Y plus fort (par exemple, pas de +2 sur un +4).",
+                    "Une fois le cumul pioché, le jeu reprend normalement : le joueur suivant peut de nouveau poser un +2 ou un +4 de la bonne couleur.",
                     "Le Joker Inversion +4 change aussi le sens du jeu ; le +4 de couleur ne le change pas."
                 ]
             },
@@ -1797,6 +1992,7 @@ document.getElementById("back-home-button")?.addEventListener("click", async () 
 
     currentRoomCode = null;
     currentGame = null;
+    updateTurnIndicators(false);
     currentGameMode = "duo";
     currentHostId = null;
     currentRoomStatus = null;
@@ -1980,7 +2176,92 @@ function playVictorySound() {
 
 document.getElementById("news-button")?.addEventListener("click", () => {
     document.getElementById("news-popup").style.display = "flex";
+    renderNewsSkinsGallery(); // le catalogue ne change pas en cours de session : pas besoin de le refaire à chaque fois
 });
+
+// Onglets "Nouveautés" / "Nouveaux skins" dans la fenêtre Nouveautés
+document.querySelectorAll(".news-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+        const target = tab.dataset.newsTab;
+
+        document.querySelectorAll(".news-tab").forEach(t => t.classList.toggle("active", t === tab));
+        document.getElementById("news-tab-updates").style.display = target === "updates" ? "" : "none";
+        document.getElementById("news-tab-skins").style.display = target === "skins" ? "" : "none";
+    });
+});
+
+// Un petit badge décrivant comment obtenir un skin ("Gratuit", "Niveau 5", "Boutique · 100 pts")
+function getSkinUnlockBadge(skin) {
+    if (skin.unlock === "default") return "🆓 Gratuit";
+    if (skin.unlock === "level") return `⭐ Niveau ${skin.unlockLevel}`;
+    if (skin.unlock === "shop") return `🛒 ${skin.price} pts DUO`;
+    return "🔒 À débloquer";
+}
+
+let newsSkinsRendered = false;
+
+// Catalogue des skins, rangé par paquet (rempli une fois, le catalogue ne change pas en session)
+function renderNewsSkinsGallery() {
+    if (newsSkinsRendered) return;
+    const gallery = document.getElementById("news-skins-gallery");
+    if (!gallery) return;
+
+    Object.entries(DECKS).forEach(([deckId, deck]) => {
+        const skins = SKINS.filter(skin => skin.deck === deckId);
+        if (skins.length === 0) return;
+
+        const section = document.createElement("section");
+        section.className = "news-section news-skins-deck";
+
+        const title = document.createElement("h3");
+        title.textContent = `Paquets ${deck.name}`;
+        section.appendChild(title);
+
+        const grid = document.createElement("div");
+        grid.className = "news-skins-grid";
+
+        skins.forEach(skin => {
+            const card = document.createElement("div");
+            card.className = "news-skin-card";
+
+            const preview = document.createElement("div");
+            preview.className = "news-skin-preview";
+            (skin.preview || []).slice(0, 4).forEach(fileName => {
+                const img = document.createElement("img");
+                img.src = `${skin.folder}${fileName}.${skin.extension || "webp"}`;
+                img.alt = "";
+                img.loading = "lazy";
+                img.addEventListener("error", () => img.remove());
+                preview.appendChild(img);
+            });
+            card.appendChild(preview);
+
+            const name = document.createElement("div");
+            name.className = "news-skin-name";
+            name.textContent = skin.name;
+            card.appendChild(name);
+
+            if (skin.description) {
+                const description = document.createElement("div");
+                description.className = "news-skin-description";
+                description.textContent = skin.description;
+                card.appendChild(description);
+            }
+
+            const badge = document.createElement("div");
+            badge.className = "news-skin-badge";
+            badge.textContent = getSkinUnlockBadge(skin);
+            card.appendChild(badge);
+
+            grid.appendChild(card);
+        });
+
+        section.appendChild(grid);
+        gallery.appendChild(section);
+    });
+
+    newsSkinsRendered = true;
+}
 
 document.getElementById("close-news-button")?.addEventListener("click", () => {
     document.getElementById("news-popup").style.display = "none";
@@ -2047,22 +2328,24 @@ document.getElementById("add-friend-button")?.addEventListener("click", async ()
     });
 });
 
+// Retourne le nombre d'amis (utilisé pour le succès "Sociable")
 async function loadFriends() {
-    if (!playerId) return;
+    if (!playerId) return 0;
     const snapshot = await get(ref(db, `users/${playerId}/friends`));
     const noFriendsMsg = document.getElementById("no-friends-message");
 
     if (!snapshot.exists()) {
         if (noFriendsMsg) noFriendsMsg.textContent = "Aucun ami pour le moment";
-        return;
+        return 0;
     }
 
     if (noFriendsMsg) noFriendsMsg.style.display = "none";
     const friendsList = document.getElementById("friends-list");
-    if (!friendsList) return;
+    const friendIds = Object.keys(snapshot.val());
+    if (!friendsList) return friendIds.length;
     friendsList.innerHTML = "";
 
-    for (const friendUid of Object.keys(snapshot.val())) {
+    for (const friendUid of friendIds) {
         const friendSnap = await get(ref(db, `users/${friendUid}`));
         if (!friendSnap.exists()) continue;
 
@@ -2077,6 +2360,8 @@ async function loadFriends() {
         `;
         friendsList.appendChild(friendElement);
     }
+
+    return friendIds.length;
 }
 
 async function loadFriendRequests() {
@@ -2113,8 +2398,9 @@ async function loadFriendRequests() {
                 [`users/${reqUid}/friends/${playerId}`]: true,
                 [`users/${playerId}/friendRequests/${reqUid}`]: null
             });
-            await loadFriends();
+            const friendsCount = await loadFriends();
             await loadFriendRequests();
+            recordFriendsCount(friendsCount);
         });
     });
 

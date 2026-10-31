@@ -905,15 +905,37 @@ button:disabled {
 }
 
 #uno-button {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+
+  z-index: 1200;
+
   background: #e53935;
   color: white;
   font-size: 18px;
   font-weight: 700;
   padding: 10px 24px;
+
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+
+  animation: duoButtonPulse 1s ease-in-out infinite;
 }
 
 #uno-button:hover {
   background: #c62828;
+}
+
+@keyframes duoButtonPulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
 }
 
 #duo-announcement {
@@ -1837,7 +1859,8 @@ button:disabled {
   width: min(340px, 88vw);
   height: 100%;
 
-  z-index: 1500;
+  /* au-dessus de l'écran de fin de partie (2000), sous les fenêtres plein écran (3000) */
+  z-index: 2050;
 
   transform: translateX(100%);
   transition: transform 0.3s ease;
@@ -1847,7 +1870,7 @@ button:disabled {
   transform: translateX(0);
 
   /* au-dessus de la languette ⭐ des Niveaux */
-  z-index: 1600;
+  z-index: 2060;
 }
 
 /* Languette toujours visible sur le bord droit de l'écran */
@@ -2172,7 +2195,8 @@ body.in-game #level-chip {
   width: min(340px, 88vw);
   height: 100%;
 
-  z-index: 1500;
+  /* au-dessus de l'écran de fin de partie (2000), sous les fenêtres plein écran (3000) */
+  z-index: 2050;
 
   transform: translateX(100%);
   transition: transform 0.3s ease;
@@ -2182,7 +2206,7 @@ body.in-game #level-chip {
   transform: translateX(0);
 
   /* au-dessus de la languette 🎨 de la Personnalisation */
-  z-index: 1600;
+  z-index: 2060;
 }
 
 /* Languette sous celle de la Personnalisation (🎨 : top 90px + 56px de haut) */
@@ -2568,6 +2592,1008 @@ body.in-game #level-chip {
   text-align: center;
 }
 
+/* ============================================================ */
+/* SUCCÈS : languette, fenêtre centrée, cartes                   */
+/* À coller à la fin de styles.css                                */
+/* ============================================================ */
+
+/* ------------------------------------------------------------ */
+/* Languette (bouton fixe, pas rattachée à un tiroir)             */
+/* ------------------------------------------------------------ */
+
+#achievements-toggle {
+  position: fixed;
+  top: 288px;
+  right: 0;
+
+  /* toujours cliquable, même pendant l'écran de fin de partie ou qu'un autre panneau est ouvert */
+  z-index: 2070;
+
+  width: 46px;
+  height: 56px;
+
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 16px 0 0 16px;
+
+  background: rgba(30, 30, 30, 0.95);
+  color: white;
+
+  font-size: 22px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  box-shadow: -4px 4px 14px rgba(0, 0, 0, 0.3);
+
+  transition: width 0.2s ease;
+}
+
+#achievements-toggle:hover {
+  width: 54px;
+  transform: none;
+}
+
+/* ------------------------------------------------------------ */
+/* Fenêtre centrée (recouvre l'écran, comme la fenêtre Compte)   */
+/* ------------------------------------------------------------ */
+
+#achievements-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  z-index: 3000;
+
+  padding: 20px;
+  box-sizing: border-box;
+
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.65);
+}
+
+#achievements-popup-content {
+  position: relative;
+
+  width: min(720px, 100%);
+
+  max-height: 88vh;
+  overflow-y: auto;
+
+  padding: 28px 26px 24px;
+  box-sizing: border-box;
+
+  background: rgba(30, 30, 30, 0.97);
+  color: white;
+
+  border-radius: 20px;
+
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+
+  text-align: left;
+}
+
+#close-achievements-button {
+  position: absolute;
+
+  top: 12px;
+  right: 12px;
+
+  width: 36px;
+  height: 36px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+
+  background: transparent;
+  color: white;
+
+  font-size: 18px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+#close-achievements-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: none;
+}
+
+#achievements-header h2 {
+  margin: 0 0 4px;
+
+  font-size: 24px;
+  text-align: center;
+}
+
+#achievements-header p {
+  margin: 0 0 18px;
+
+  font-size: 14px;
+  text-align: center;
+
+  opacity: 0.8;
+}
+
+/* Résumé : X / Y débloqués + barre */
+#achievements-summary {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.08);
+  border-left: 4px solid rgba(255, 215, 70, 0.9);
+
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.achievements-summary-bar {
+  width: 100%;
+  height: 8px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.achievements-summary-bar-fill {
+  height: 100%;
+
+  border-radius: 999px;
+
+  background: linear-gradient(90deg, #ffd746, #ff9f1c);
+
+  transition: width 0.4s ease;
+}
+
+/* Onglets par mode de jeu */
+#achievements-tabs {
+  margin-bottom: 16px;
+
+  display: flex;
+  gap: 6px;
+}
+
+.achievement-tab {
+  flex: 1;
+  min-height: 42px;
+
+  margin: 0;
+  padding: 8px 6px;
+
+  border: 2px solid transparent;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  box-shadow: none;
+
+  cursor: pointer;
+}
+
+.achievement-tab:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: none;
+}
+
+.achievement-tab.active,
+.achievement-tab.active:hover {
+  background: rgba(255, 215, 70, 0.9);
+  color: #222;
+}
+
+#achievements-body {
+  position: relative;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* ------------------------------------------------------------ */
+/* Une carte de succès                                           */
+/* ------------------------------------------------------------ */
+
+.achievement-card {
+  padding: 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  border: 2px solid transparent;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.06);
+
+  opacity: 0.75;
+}
+
+.achievement-card.unlocked {
+  opacity: 1;
+
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 215, 70, 0.55);
+}
+
+.achievement-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.achievement-icon {
+  flex-shrink: 0;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: rgba(0, 0, 0, 0.25);
+
+  font-size: 19px;
+}
+
+.achievement-titles {
+  min-width: 0;
+}
+
+.achievement-name {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.achievement-description {
+  margin-top: 2px;
+
+  font-size: 12.5px;
+  line-height: 1.4;
+
+  opacity: 0.8;
+}
+
+.achievement-card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.achievement-tier {
+  padding: 2px 10px;
+
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.14);
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.achievement-tier.tier-bronze {
+  background: rgba(205, 127, 50, 0.35);
+}
+
+.achievement-tier.tier-silver {
+  background: rgba(192, 192, 192, 0.35);
+}
+
+.achievement-tier.tier-gold {
+  background: rgba(255, 215, 0, 0.35);
+}
+
+.achievement-tier.tier-platinum {
+  background: rgba(130, 220, 230, 0.35);
+}
+
+.achievement-tier.tier-legendary {
+  background: linear-gradient(90deg, rgba(255, 110, 199, 0.4), rgba(255, 215, 70, 0.4));
+}
+
+.achievement-reward {
+  font-size: 12px;
+  font-weight: 700;
+
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+.achievement-status {
+  padding: 4px 10px;
+
+  border-radius: 10px;
+
+  background: rgba(255, 215, 70, 0.9);
+  color: #222;
+
+  font-size: 12.5px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.achievement-status.locked {
+  background: rgba(0, 0, 0, 0.25);
+  color: white;
+
+  opacity: 0.8;
+}
+
+.achievement-progress-bar {
+  width: 100%;
+  height: 6px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.achievement-progress-bar-fill {
+  height: 100%;
+
+  border-radius: 999px;
+
+  background: linear-gradient(90deg, #ffd746, #ff9f1c);
+
+  transition: width 0.4s ease;
+}
+
+.achievement-progress-text {
+  margin-top: -4px;
+
+  font-size: 11.5px;
+  font-weight: 700;
+  text-align: right;
+
+  opacity: 0.75;
+}
+
+/* ------------------------------------------------------------ */
+/* Bandeau de succès dans le récapitulatif de fin de partie       */
+/* ------------------------------------------------------------ */
+
+.game-reward-achievements {
+  padding: 10px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  border-radius: 12px;
+
+  background: rgba(255, 215, 70, 0.3);
+
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.game-reward-achievements-title {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.game-reward-achievement {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------ */
+/* MOBILE                                                        */
+/* ------------------------------------------------------------ */
+
+@media (max-width: 820px),
+(pointer: coarse) and (max-height: 500px) {
+
+  #achievements-toggle {
+    top: calc(36% + 168px);
+
+    width: 28px;
+    height: 48px;
+
+    font-size: 17px;
+  }
+
+  #achievements-popup {
+    padding: 12px;
+  }
+
+  #achievements-popup-content {
+    max-height: 92vh;
+    max-height: 92dvh;
+
+    padding: 24px 18px 20px;
+  }
+
+  #close-achievements-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .achievement-tab {
+    min-height: 44px;
+  }
+
+  .achievements-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================ */
+/* BOUTIQUE, VARIANTES DE SKINS ET MESSAGES                       */
+/* À coller à la fin de styles.css                                */
+/* ============================================================ */
+
+/* ------------------------------------------------------------ */
+/* PERSONNALISATION : cartes de skins avec variantes             */
+/* (remplacent les anciens boutons .skin-option)                 */
+/* ------------------------------------------------------------ */
+
+.skin-card {
+  margin-bottom: 10px;
+  padding: 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  border: 2px solid transparent;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.skin-card:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.skin-card.equipped {
+  border-color: rgba(255, 215, 70, 0.9);
+}
+
+.skin-card.locked {
+  opacity: 0.55;
+}
+
+.skin-card.locked:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Zone cliquable : aperçu, nom, description, état */
+.skin-main {
+  width: 100%;
+  min-height: 0;
+
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+
+  border: none;
+  border-radius: 0;
+
+  background: none;
+  color: white;
+
+  font-family: inherit;
+  text-align: left;
+
+  box-shadow: none;
+
+  cursor: pointer;
+}
+
+.skin-main:hover:not(:disabled),
+.skin-main:active:not(:disabled) {
+  background: none;
+  transform: none;
+  box-shadow: none;
+}
+
+.skin-main:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+/* Boutons des variantes : "Normal" | "Négatif" ... */
+.skin-variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.skin-chip {
+  min-height: 34px;
+
+  margin: 0;
+  padding: 6px 14px;
+
+  border: 2px solid transparent;
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  box-shadow: none;
+
+  cursor: pointer;
+}
+
+.skin-chip:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: none;
+}
+
+.skin-chip.active,
+.skin-chip.active:hover {
+  background: rgba(255, 215, 70, 0.9);
+  color: #222;
+}
+
+/* Liens vers la boutique */
+.skin-shop-link,
+.skin-shop-button {
+  min-height: 36px;
+
+  margin: 0;
+  padding: 6px 14px;
+
+  border: 2px dashed rgba(255, 215, 70, 0.6);
+  border-radius: 12px;
+
+  background: transparent;
+  color: #ffd746;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  box-shadow: none;
+
+  cursor: pointer;
+}
+
+.skin-shop-link:hover,
+.skin-shop-button:hover {
+  background: rgba(255, 215, 70, 0.15);
+  color: #ffd746;
+  transform: none;
+}
+
+.skin-shop-link {
+  align-self: flex-start;
+}
+
+.skin-shop-button {
+  width: 100%;
+  margin-top: 6px;
+}
+
+/* ------------------------------------------------------------ */
+/* FENÊTRE "BOUTIQUE" (à droite)                                 */
+/* ------------------------------------------------------------ */
+
+#shop-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+
+  width: min(340px, 88vw);
+  height: 100%;
+
+  /* même palier que les autres panneaux (voir styles.css) */
+  z-index: 2050;
+
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+#shop-sidebar.open {
+  transform: translateX(0);
+
+  /* au-dessus des languettes des autres fenêtres */
+  z-index: 2060;
+}
+
+/* Languette sous celle des Niveaux (🎨 : 90px, ⭐ : 156px, 🛒 : 222px) */
+#shop-sidebar-toggle {
+  position: absolute;
+  right: 100%;
+  top: 222px;
+
+  width: 46px;
+  height: 56px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 16px 0 0 16px;
+
+  background: rgba(30, 30, 30, 0.95);
+  color: white;
+
+  font-size: 22px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  box-shadow: -4px 4px 14px rgba(0, 0, 0, 0.3);
+
+  transition: width 0.2s ease;
+}
+
+#shop-sidebar-toggle:hover {
+  width: 54px;
+}
+
+#shop-sidebar-panel {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  box-sizing: border-box;
+
+  background: rgba(30, 30, 30, 0.97);
+  color: white;
+
+  border-radius: 20px 0 0 20px;
+
+  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.4);
+}
+
+#shop-sidebar-header {
+  position: relative;
+
+  padding: 22px 56px 14px 22px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+#shop-sidebar-header h2 {
+  margin: 0;
+
+  font-size: 20px;
+}
+
+#shop-sidebar-close {
+  position: absolute;
+
+  top: 16px;
+  right: 14px;
+
+  width: 36px;
+  height: 36px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+
+  background: transparent;
+  color: white;
+
+  font-size: 18px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+}
+
+#shop-sidebar-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Solde de points DUO */
+#shop-balance {
+  margin: 14px 18px 0;
+  padding: 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.08);
+  border-left: 4px solid rgba(255, 215, 70, 0.9);
+}
+
+.shop-balance-amount {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.shop-balance-hint {
+  font-size: 13px;
+
+  opacity: 0.7;
+}
+
+#shop-sidebar-body {
+  position: relative;
+
+  flex: 1;
+
+  overflow-y: auto;
+
+  padding: 8px 18px 24px;
+}
+
+.shop-deck {
+  margin-top: 14px;
+}
+
+#shop-sidebar .shop-deck-title {
+  margin: 0 0 10px;
+
+  font-size: 16px;
+  text-align: left;
+}
+
+/* Un article */
+.shop-item {
+  margin-bottom: 12px;
+  padding: 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  border: 2px solid transparent;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.shop-item.owned {
+  border-color: rgba(255, 215, 70, 0.45);
+}
+
+.shop-item-tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+
+  color: #ffd746;
+}
+
+.shop-item-name {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.shop-item-footer {
+  margin-top: 4px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.shop-price {
+  padding: 6px 12px;
+
+  border-radius: 999px;
+
+  background: rgba(255, 215, 70, 0.9);
+  color: #222;
+
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.shop-actions {
+  flex: 1;
+
+  display: flex;
+  justify-content: flex-end;
+}
+
+.shop-button {
+  min-height: 40px;
+
+  margin: 0;
+  padding: 8px 14px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.18);
+  color: white;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+
+  box-shadow: none;
+
+  cursor: pointer;
+}
+
+.shop-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.28);
+  transform: none;
+}
+
+.shop-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.shop-buy {
+  background: #43a047;
+}
+
+.shop-buy:hover:not(:disabled) {
+  background: #388e3c;
+}
+
+/* 2e étape : confirmer l'achat */
+.shop-buy.confirm,
+.shop-buy.confirm:hover:not(:disabled) {
+  background: #ff9800;
+  color: #222;
+}
+
+.shop-empty {
+  text-align: center;
+
+  opacity: 0.7;
+}
+
+/* ------------------------------------------------------------ */
+/* MESSAGE TEMPORAIRE (skin débloqué, achat...)                  */
+/* ------------------------------------------------------------ */
+
+#reward-notice {
+  position: fixed;
+  top: calc(16px + env(safe-area-inset-top));
+  left: 50%;
+
+  z-index: 3500;
+
+  width: max-content;
+  max-width: 90vw;
+  padding: 12px 22px;
+
+  border-radius: 14px;
+
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+
+  font-weight: 700;
+  text-align: center;
+
+  opacity: 0;
+  transform: translate(-50%, -20px);
+  pointer-events: none;
+
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+#reward-notice.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ------------------------------------------------------------ */
+/* MOBILE                                                        */
+/* ------------------------------------------------------------ */
+
+@media (max-width: 820px),
+(pointer: coarse) and (max-height: 500px) {
+
+  #shop-sidebar {
+    width: min(360px, 92vw);
+  }
+
+  /* languette fine, sous celles des Niveaux (🎨 : 36%, ⭐ : +56px, 🛒 : +112px) */
+  #shop-sidebar-toggle,
+  #shop-sidebar-toggle:hover {
+    top: calc(36% + 112px);
+
+    width: 28px;
+    height: 48px;
+
+    font-size: 17px;
+  }
+
+  #shop-sidebar-header {
+    padding-top: calc(18px + env(safe-area-inset-top));
+  }
+
+  #shop-sidebar-close {
+    top: calc(12px + env(safe-area-inset-top));
+    right: 10px;
+
+    width: 44px;
+    height: 44px;
+  }
+
+  #shop-sidebar-body {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+
+  .skin-chip {
+    min-height: 40px;
+  }
+
+  .shop-button {
+    min-height: 44px;
+  }
+}
+
 @media (max-width: 600px) {
   #home-logo img {
     width: 240px;
@@ -2656,7 +3682,8 @@ body.in-game #level-chip {
 /* PETITS ÉCRANS                                                 */
 /* ------------------------------------------------------------ */
 
-@media (max-width: 820px), (pointer: coarse) and (max-height: 500px) {
+@media (max-width: 820px),
+(pointer: coarse) and (max-height: 500px) {
 
   /* --- Page : encoches, barre du navigateur, éléments fixes --- */
 
@@ -2666,10 +3693,7 @@ body.in-game #level-chip {
 
     /* le haut est réservé à la pastille de niveau / au bouton Accueil */
     padding:
-      calc(56px + env(safe-area-inset-top))
-      max(20px, env(safe-area-inset-right))
-      calc(12px + env(safe-area-inset-bottom))
-      max(12px, env(safe-area-inset-left));
+      calc(56px + env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   }
 
   /* en salon / en jeu : place pour la barre d'actions fixée en bas */
@@ -2904,10 +3928,7 @@ body.in-game #level-chip {
     width: auto;
     margin: 0;
     padding:
-      8px
-      max(12px, env(safe-area-inset-right))
-      calc(10px + env(safe-area-inset-bottom))
-      max(12px, env(safe-area-inset-left));
+      8px max(12px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
 
     gap: 10px;
     flex-wrap: nowrap;
@@ -2953,18 +3974,6 @@ body.in-game #level-chip {
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
 
     animation: duoButtonPulse 1s ease-in-out infinite;
-  }
-
-  @keyframes duoButtonPulse {
-
-    0%,
-    100% {
-      transform: scale(1);
-    }
-
-    50% {
-      transform: scale(1.08);
-    }
   }
 
   /* --- Fenêtres au centre de l'écran --- */
@@ -3189,5 +4198,1494 @@ body.in-game #level-chip {
 
     width: 72px;
     height: 72px;
+  }
+}
+
+/* ============================================================ */
+/* PERSONNALISATION : ONGLETS PAR JEU                            */
+/* À coller à la fin de styles.css                               */
+/* ============================================================ */
+
+/* Rangée de boutons "DUO" / "DUO No Mercy" / "DUO Flip" sous le titre */
+#skin-sidebar-tabs {
+  display: flex;
+  gap: 6px;
+
+  padding: 12px 18px 0;
+}
+
+.skin-tab {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 40px;
+
+  margin: 0;
+  padding: 8px 6px;
+
+  border: 2px solid transparent;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  box-shadow: none;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.skin-tab:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: none;
+}
+
+/* Onglet du jeu affiché */
+.skin-tab.active,
+.skin-tab.active:hover {
+  background: rgba(255, 215, 70, 0.9);
+  color: #222;
+}
+
+/* Jeu pas encore créé */
+.skin-tab.coming-soon:not(.active) {
+  opacity: 0.7;
+}
+
+/* Message affiché à la place des paquets d'un jeu en développement */
+.skin-deck-placeholder {
+  margin: 4px 0 0;
+  padding: 18px 14px;
+
+  border: 2px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 14px;
+
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+
+  opacity: 0.8;
+}
+
+/* Le contenu du premier jeu n'a plus besoin de marge au-dessus : les onglets sont là */
+#skin-sidebar-body .skin-deck:first-child {
+  margin-top: 8px;
+}
+
+@media (max-width: 820px), (pointer: coarse) and (max-height: 500px) {
+
+  .skin-tab {
+    min-height: 44px;
+  }
+}
+
+/* ============================================================ */
+/* PERSONNALISATION REFONDUE : aperçu, variantes, grille         */
+/* À coller à la fin de styles.css                               */
+/* (les anciennes règles .skin-card, .skin-main, .skin-chip      */
+/*  ne servent plus : tu peux les supprimer si tu veux)          */
+/* ============================================================ */
+
+/* ------------------------------------------------------------ */
+/* GRAND APERÇU du paquet sélectionné                            */
+/* ------------------------------------------------------------ */
+
+.skin-hero {
+  padding: 16px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  border: 2px solid transparent;
+  border-radius: 16px;
+
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.05));
+
+  transition: border-color 0.2s ease;
+}
+
+.skin-hero.equipped {
+  border-color: rgba(255, 215, 70, 0.9);
+}
+
+.skin-hero .skin-preview {
+  justify-content: center;
+  min-height: 92px;
+}
+
+.skin-hero .skin-preview img {
+  height: 88px;
+}
+
+.skin-hero.locked .skin-preview {
+  opacity: 0.5;
+  filter: grayscale(0.6);
+}
+
+.skin-hero-name {
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.skin-hero .skin-description {
+  text-align: center;
+}
+
+.skin-hero .skin-badge {
+  align-self: center;
+}
+
+.skin-badge-equipped {
+  background: rgba(255, 215, 70, 0.9);
+  color: #222;
+}
+
+.skin-hero-equip {
+  align-self: center;
+  min-height: 40px;
+
+  margin: 0;
+  padding: 8px 20px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: #43a047;
+  color: white;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  box-shadow: none;
+
+  cursor: pointer;
+}
+
+.skin-hero-equip:hover {
+  background: #388e3c;
+  transform: none;
+}
+
+.skin-hero .skin-shop-link {
+  align-self: center;
+}
+
+/* ------------------------------------------------------------ */
+/* LISTE DÉROULANTE DES VARIANTES                                */
+/* ------------------------------------------------------------ */
+
+.skin-dropdown {
+  width: 100%;
+}
+
+.skin-dropdown-toggle {
+  width: 100%;
+  min-height: 44px;
+
+  margin: 0;
+  padding: 8px 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+
+  background: rgba(0, 0, 0, 0.25);
+  color: white;
+
+  font-family: inherit;
+  font-size: 14px;
+  text-align: left;
+
+  box-shadow: none;
+
+  cursor: pointer;
+
+  transition: border-color 0.2s ease;
+}
+
+.skin-dropdown-toggle:hover {
+  background: rgba(0, 0, 0, 0.35);
+  transform: none;
+}
+
+.skin-dropdown.open .skin-dropdown-toggle {
+  border-color: rgba(255, 215, 70, 0.9);
+}
+
+.skin-dropdown-label {
+  font-weight: 500;
+
+  opacity: 0.7;
+}
+
+.skin-dropdown-value {
+  flex: 1;
+
+  font-weight: 800;
+}
+
+.skin-dropdown-arrow {
+  transition: transform 0.2s ease;
+}
+
+.skin-dropdown.open .skin-dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+/* La liste s'ouvre sous le bouton et pousse le contenu (pas de menu flottant qui serait coupé) */
+.skin-dropdown-list {
+  display: none;
+
+  margin-top: 6px;
+  padding: 6px;
+
+  flex-direction: column;
+  gap: 4px;
+
+  border-radius: 12px;
+
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.skin-dropdown.open .skin-dropdown-list {
+  display: flex;
+}
+
+.skin-dropdown-option {
+  width: 100%;
+  min-height: 40px;
+
+  margin: 0;
+  padding: 8px 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border: none;
+  border-radius: 10px;
+
+  background: transparent;
+  color: white;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+
+  box-shadow: none;
+
+  cursor: pointer;
+}
+
+.skin-dropdown-option:hover {
+  background: rgba(255, 255, 255, 0.14);
+  transform: none;
+}
+
+.skin-dropdown-option.active,
+.skin-dropdown-option.active:hover {
+  background: rgba(255, 215, 70, 0.9);
+  color: #222;
+}
+
+.skin-dropdown-option.active::after {
+  content: "✓";
+}
+
+/* ------------------------------------------------------------ */
+/* GRILLE DE TUILES                                              */
+/* ------------------------------------------------------------ */
+
+.skin-collection-title {
+  margin: 18px 0 10px;
+
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+
+  opacity: 0.85;
+}
+
+.skin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.skin-tile {
+  min-height: 0;
+
+  margin: 0;
+  padding: 10px 8px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+
+  border: 2px solid transparent;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+
+  font-family: inherit;
+  text-align: center;
+
+  box-shadow: none;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.skin-tile:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: none;
+}
+
+.skin-tile.locked {
+  opacity: 0.6;
+}
+
+/* Tuile mise en avant en haut (verrouillée ou non) */
+.skin-tile.selected {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Tuile équipée */
+.skin-tile.equipped {
+  border-color: rgba(255, 215, 70, 0.9);
+}
+
+/* Cartes de la tuile : petites et superposées */
+.skin-tile .skin-preview {
+  min-height: 0;
+  gap: 0;
+
+  justify-content: center;
+}
+
+.skin-tile .skin-preview img {
+  height: 54px;
+
+  margin-left: -14px;
+}
+
+.skin-tile .skin-preview img:first-child {
+  margin-left: 0;
+}
+
+.skin-tile-name {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.skin-tile-state {
+  padding: 2px 8px;
+
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.14);
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.skin-tile.equipped .skin-tile-state {
+  background: rgba(255, 215, 70, 0.9);
+  color: #222;
+}
+
+.skin-tile-extra {
+  font-size: 11px;
+
+  opacity: 0.7;
+}
+
+/* ------------------------------------------------------------ */
+/* BOUTIQUE : rappel des articles déjà achetés                   */
+/* ------------------------------------------------------------ */
+
+.shop-owned-note {
+  margin-top: 14px;
+  padding: 12px 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.06);
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.shop-owned-link {
+  align-self: flex-start;
+  min-height: 36px;
+
+  margin: 0;
+  padding: 6px 14px;
+
+  border: 2px dashed rgba(255, 215, 70, 0.6);
+  border-radius: 12px;
+
+  background: transparent;
+  color: #ffd746;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  box-shadow: none;
+
+  cursor: pointer;
+}
+
+.shop-owned-link:hover {
+  background: rgba(255, 215, 70, 0.15);
+  color: #ffd746;
+  transform: none;
+}
+
+/* ------------------------------------------------------------ */
+/* MOBILE : zones de toucher plus grandes                        */
+/* ------------------------------------------------------------ */
+
+@media (max-width: 820px), (pointer: coarse) and (max-height: 500px) {
+
+  .skin-dropdown-toggle {
+    min-height: 48px;
+  }
+
+  .skin-dropdown-option {
+    min-height: 44px;
+  }
+
+  .skin-hero-equip {
+    min-height: 44px;
+  }
+
+  .skin-tile {
+    padding: 12px 8px;
+  }
+}
+
+/* ============================================================ */
+/* COMPTES : bouton, fenêtre de connexion, encart dans Niveaux   */
+/* À coller à la fin de styles.css                               */
+/* ============================================================ */
+
+/* ------------------------------------------------------------ */
+/* Bouton "Compte" (à côté de "Nouveautés")                      */
+/* ------------------------------------------------------------ */
+
+#account-button {
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 10px 16px;
+
+  background: #6a5acd;
+  color: white;
+
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+#account-button:hover {
+  background: #7b6be0;
+  color: white;
+
+  transform: translateY(-2px) scale(1.03);
+}
+
+/* Connecté à un compte */
+#account-button.linked {
+  background: #43a047;
+}
+
+#account-button.linked:hover {
+  background: #52b356;
+}
+
+/* ------------------------------------------------------------ */
+/* Fenêtre "Compte"                                              */
+/* ------------------------------------------------------------ */
+
+#account-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  z-index: 3000;
+
+  padding: 20px;
+  box-sizing: border-box;
+
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.65);
+}
+
+#account-popup-content {
+  position: relative;
+
+  width: min(440px, 100%);
+
+  max-height: 90vh;
+  overflow-y: auto;
+
+  padding: 28px 26px 24px;
+  box-sizing: border-box;
+
+  background: rgba(30, 30, 30, 0.97);
+  color: white;
+
+  border-radius: 20px;
+
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+
+  text-align: left;
+}
+
+#account-popup-content h2 {
+  margin: 0 0 12px;
+
+  font-size: 22px;
+  text-align: center;
+}
+
+#close-account-button {
+  position: absolute;
+
+  top: 12px;
+  right: 12px;
+
+  width: 36px;
+  height: 36px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+
+  background: transparent;
+  color: white;
+
+  font-size: 18px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+#close-account-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: none;
+}
+
+.account-intro {
+  margin: 0 0 14px;
+
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+
+  opacity: 0.85;
+}
+
+/* Messages (erreur / réussite / information) */
+.account-message {
+  display: none;
+
+  margin: 0 0 14px;
+  padding: 10px 14px;
+
+  border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.account-message.error,
+.account-message.success,
+.account-message.info {
+  display: block;
+}
+
+.account-message.error {
+  background: rgba(229, 57, 53, 0.25);
+  border: 1px solid rgba(229, 57, 53, 0.7);
+}
+
+.account-message.success {
+  background: rgba(67, 160, 71, 0.25);
+  border: 1px solid rgba(67, 160, 71, 0.7);
+}
+
+.account-message.info {
+  background: rgba(255, 215, 70, 0.2);
+  border: 1px solid rgba(255, 215, 70, 0.7);
+}
+
+/* Bouton Google */
+.account-google {
+  width: 100%;
+  min-height: 48px;
+
+  margin: 0;
+  padding: 10px 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: white;
+  color: #333;
+
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.account-google:hover:not(:disabled) {
+  background: #f1f1f1;
+  transform: none;
+}
+
+.account-google-logo {
+  width: 24px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #4285f4;
+  color: white;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* "ou avec une adresse e-mail" */
+.account-separator {
+  margin: 16px 0;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  font-size: 13px;
+
+  opacity: 0.7;
+}
+
+.account-separator::before,
+.account-separator::after {
+  content: "";
+
+  flex: 1;
+  height: 1px;
+
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Onglets "Créer un compte" / "Se connecter" */
+.account-tabs {
+  margin-bottom: 14px;
+
+  display: flex;
+  gap: 6px;
+}
+
+.account-tab {
+  flex: 1;
+  min-height: 40px;
+
+  margin: 0;
+  padding: 8px 6px;
+
+  border: 2px solid transparent;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  box-shadow: none;
+
+  cursor: pointer;
+}
+
+.account-tab:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16);
+  transform: none;
+}
+
+.account-tab.active,
+.account-tab.active:hover {
+  background: rgba(255, 215, 70, 0.9);
+  color: #222;
+}
+
+/* Formulaire */
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.account-input {
+  width: 100%;
+  min-height: 46px;
+
+  margin: 0;
+  padding: 10px 14px;
+
+  box-sizing: border-box;
+
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+
+  font-family: inherit;
+  font-size: 16px; /* 16px minimum : sinon iPhone zoome sur le champ */
+
+  outline: none;
+}
+
+.account-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.account-input:focus {
+  border-color: rgba(255, 215, 70, 0.9);
+}
+
+.account-submit {
+  min-height: 48px;
+
+  margin: 4px 0 0;
+  padding: 10px 16px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: #6a5acd;
+  color: white;
+
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+
+  box-shadow: none;
+
+  cursor: pointer;
+}
+
+.account-submit:hover:not(:disabled) {
+  background: #7b6be0;
+  transform: none;
+}
+
+/* Petits liens (mot de passe oublié, renvoyer l'e-mail) */
+.account-link {
+  align-self: flex-start;
+  min-height: 0;
+
+  margin: 0;
+  padding: 2px 0;
+
+  border: none;
+  border-radius: 0;
+
+  background: none;
+  color: #ffd746;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+
+  box-shadow: none;
+
+  cursor: pointer;
+}
+
+.account-link:hover:not(:disabled) {
+  background: none;
+  color: #ffe477;
+  transform: none;
+}
+
+.account-note {
+  margin: 14px 0 0;
+
+  font-size: 13px;
+  line-height: 1.5;
+
+  opacity: 0.75;
+}
+
+/* Vue "compte connecté" */
+.account-rows {
+  margin-bottom: 4px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-row {
+  padding: 10px 14px;
+
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  font-size: 14px;
+}
+
+.account-row-label {
+  opacity: 0.7;
+}
+
+.account-row-value {
+  font-weight: 700;
+  text-align: right;
+
+  word-break: break-all;
+}
+
+.account-verify {
+  margin-top: 12px;
+  padding: 10px 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  border-radius: 12px;
+
+  background: rgba(255, 215, 70, 0.15);
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.account-actions {
+  margin-top: 16px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-secondary,
+.account-danger {
+  min-height: 44px;
+
+  margin: 0;
+  padding: 10px 16px;
+
+  border: none;
+  border-radius: 12px;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  box-shadow: none;
+
+  cursor: pointer;
+}
+
+.account-secondary {
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+}
+
+.account-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.24);
+  transform: none;
+}
+
+.account-danger {
+  background: rgba(229, 57, 53, 0.85);
+  color: white;
+}
+
+.account-danger:hover:not(:disabled) {
+  background: #e53935;
+  transform: none;
+}
+
+/* ------------------------------------------------------------ */
+/* Encart dans la fenêtre Niveaux                                */
+/* ------------------------------------------------------------ */
+
+#levels-account-banner {
+  margin: 10px 18px 0;
+  padding: 10px 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  border-radius: 12px;
+
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+#levels-account-banner.guest {
+  background: rgba(255, 215, 70, 0.15);
+  border: 1px solid rgba(255, 215, 70, 0.5);
+}
+
+#levels-account-banner.linked {
+  background: rgba(67, 160, 71, 0.18);
+  border: 1px solid rgba(67, 160, 71, 0.5);
+}
+
+#levels-account-banner button {
+  flex-shrink: 0;
+  min-height: 34px;
+
+  margin: 0;
+  padding: 6px 12px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.18);
+  color: white;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+
+  box-shadow: none;
+
+  cursor: pointer;
+}
+
+#levels-account-banner button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: none;
+}
+
+/* ------------------------------------------------------------ */
+/* MOBILE                                                        */
+/* ------------------------------------------------------------ */
+
+@media (max-width: 820px), (pointer: coarse) and (max-height: 500px) {
+
+  /* "Nouveautés" et "Compte" se partagent la même ligne */
+  #news-button,
+  #account-button {
+    flex: 1 1 45%;
+    min-height: 44px;
+  }
+
+  #account-popup {
+    padding: 12px;
+  }
+
+  #account-popup-content {
+    max-height: 92vh;
+    max-height: 92dvh;
+
+    padding: 24px 18px 20px;
+  }
+
+  #close-account-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .account-tab {
+    min-height: 44px;
+  }
+
+  .account-link {
+    min-height: 36px;
+  }
+
+  #levels-account-banner button {
+    min-height: 40px;
+  }
+}
+
+/* ============================================================ */
+/* INDICATEUR DE TOUR : rail des joueurs, sens du jeu, halo      */
+/* À coller à la fin de styles.css                               */
+/* ============================================================ */
+
+/* ------------------------------------------------------------ */
+/* RAIL DES JOUEURS (pendant la partie)                          */
+/* ------------------------------------------------------------ */
+
+#players-list.turn-rail {
+  max-width: 820px;
+
+  align-items: stretch;
+}
+
+/* Sens du jeu (affiché à partir de 3 joueurs en lice) */
+#players-list[data-direction]::before {
+  flex: 0 0 100%;
+
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-align: center;
+
+  opacity: 0.9;
+}
+
+#players-list[data-direction="forward"]::before {
+  content: "↻ Sens normal";
+}
+
+#players-list[data-direction="backward"]::before {
+  content: "↺ Sens inversé";
+}
+
+/* Une puce = un joueur : badge, nom, nombre de cartes */
+#players-list li.turn-chip {
+  min-width: 128px;
+  padding: 7px 12px 9px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.turn-chip-badge {
+  min-height: 17px;
+  padding: 1px 9px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  line-height: 15px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Sans badge, on garde la hauteur : toutes les puces restent alignées */
+.turn-chip-badge:empty {
+  visibility: hidden;
+}
+
+.turn-chip-name {
+  max-width: 100%;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.turn-chip-cards {
+  font-size: 12px;
+  font-weight: 600;
+
+  opacity: 0.8;
+}
+
+/* Celui qui joue */
+#players-list li.turn-chip.current {
+  background: rgba(255, 255, 255, 0.34);
+  border: 2px solid #fff;
+
+  box-shadow:
+    0 0 0 3px rgba(255, 215, 70, 0.8),
+    0 0 20px rgba(255, 215, 70, 0.65);
+
+  transform: scale(1.06);
+}
+
+#players-list li.turn-chip.current .turn-chip-badge {
+  background: #ffd746;
+  color: #222;
+}
+
+/* Celui qui joue ensuite */
+#players-list li.turn-chip.next {
+  border: 2px dashed rgba(255, 255, 255, 0.9);
+}
+
+#players-list li.turn-chip.next .turn-chip-badge {
+  background: rgba(255, 255, 255, 0.92);
+  color: #333;
+}
+
+/* Moi */
+#players-list li.turn-chip.me .turn-chip-name {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+
+/* Joueur qui a fini ou éliminé */
+#players-list li.turn-chip.done {
+  opacity: 0.55;
+
+  filter: grayscale(0.35);
+}
+
+#players-list li.turn-chip.done .turn-chip-badge {
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+}
+
+/* Gagnant, une fois la partie terminée */
+#players-list li.turn-chip.winner {
+  border: 2px solid #fff;
+
+  box-shadow:
+    0 0 0 3px rgba(255, 215, 70, 0.8),
+    0 0 16px rgba(255, 215, 70, 0.5);
+}
+
+#players-list li.turn-chip.winner .turn-chip-badge {
+  background: #ffd746;
+  color: #222;
+}
+
+/* ------------------------------------------------------------ */
+/* TEXTE DU TOUR : "tu joues juste après !"                      */
+/* ------------------------------------------------------------ */
+
+#turn-info.next-turn {
+  background: #ffe8a3;
+  color: #7a5200;
+}
+
+/* ------------------------------------------------------------ */
+/* HALO "C'EST À TOI" autour de l'écran                          */
+/* (la classe my-turn est posée sur le body par le JavaScript)   */
+/* ------------------------------------------------------------ */
+
+body.my-turn::after {
+  content: "";
+
+  position: fixed;
+  inset: 0;
+
+  /* sous les boutons et les fenêtres, et ne bloque aucun toucher */
+  z-index: 800;
+  pointer-events: none;
+
+  box-shadow:
+    inset 0 0 0 4px rgba(255, 255, 255, 0.85),
+    inset 0 0 46px rgba(255, 215, 70, 0.55);
+
+  animation: turnGlow 2.6s ease-in-out infinite;
+}
+
+@keyframes turnGlow {
+
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Pour les personnes qui préfèrent peu d'animations : halo fixe */
+@media (prefers-reduced-motion: reduce) {
+
+  body.my-turn::after {
+    animation: none;
+  }
+
+  #players-list li.turn-chip {
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------ */
+/* MOBILE                                                        */
+/* ------------------------------------------------------------ */
+
+@media (max-width: 820px), (pointer: coarse) and (max-height: 500px) {
+
+  #players-list.turn-rail {
+    gap: 6px;
+  }
+
+  /* jusqu'à 4 puces par ligne, puis retour à la ligne */
+  #players-list li.turn-chip {
+    flex: 1 1 22%;
+    min-width: 0;
+    max-width: 150px;
+    padding: 6px 6px 7px;
+  }
+
+  .turn-chip-name {
+    font-size: 13px;
+  }
+
+  .turn-chip-badge {
+    padding: 1px 6px;
+
+    font-size: 10px;
+  }
+
+  #players-list li.turn-chip.current {
+    transform: scale(1.03);
+  }
+}
+
+/* ============================================================ */
+/* CHOIX DE COULEUR AVEC UN SKIN NÉGATIF (texte au lieu de ronds) */
+/* À coller à la fin de styles.css                                */
+/* ============================================================ */
+
+#color-choice-buttons.negative {
+  flex-wrap: wrap;
+
+  gap: 10px;
+}
+
+#color-choice-buttons.negative button {
+  width: auto;
+  height: auto;
+  min-width: 96px;
+
+  padding: 12px 16px;
+
+  border-radius: 12px;
+
+  color: #1a1a1a;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+/* Fond de chaque bouton : la couleur "vue" une fois inversée, pour rester intuitif */
+#color-choice-buttons.negative button[data-color="red"] {
+  background: #7ad9ff; /* devient bleu clair en négatif */
+}
+
+#color-choice-buttons.negative button[data-color="blue"] {
+  background: #ffd93d; /* devient jaune en négatif */
+}
+
+#color-choice-buttons.negative button[data-color="green"] {
+  background: #ff6fae; /* devient rose en négatif */
+  color: #fff;
+}
+
+#color-choice-buttons.negative button[data-color="yellow"] {
+  background: #2f6fed; /* devient bleu en négatif */
+  color: #fff;
+}
+
+@media (max-width: 820px), (pointer: coarse) and (max-height: 500px) {
+
+  #color-choice-buttons.negative button {
+    min-width: 104px;
+    min-height: 44px;
+
+    font-size: 14px;
+  }
+}
+
+
+/* ============================================================ */
+/* FENÊTRE NOUVEAUTÉS : ONGLETS + GALERIE DE SKINS                */
+/* À coller à la fin de styles.css                                */
+/* ============================================================ */
+
+#news-tabs {
+  margin-bottom: 16px;
+
+  display: flex;
+  gap: 6px;
+}
+
+.news-tab {
+  flex: 1;
+  min-height: 42px;
+
+  margin: 0;
+  padding: 8px 10px;
+
+  border: 2px solid transparent;
+  border-radius: 12px;
+
+  background: rgba(0, 0, 0, 0.06);
+  color: #333;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  box-shadow: none;
+
+  cursor: pointer;
+}
+
+.news-tab:hover {
+  background: rgba(0, 0, 0, 0.12);
+  transform: none;
+}
+
+.news-tab.active,
+.news-tab.active:hover {
+  background: #6a5acd;
+  color: white;
+}
+
+/* Galerie de skins */
+.news-skins-deck h3 {
+  margin-top: 0;
+}
+
+.news-skins-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.news-skin-card {
+  padding: 10px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  border-radius: 12px;
+
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.news-skin-preview {
+  display: flex;
+  gap: 4px;
+
+  min-height: 46px;
+}
+
+.news-skin-preview img {
+  height: 44px;
+  width: auto;
+
+  border-radius: 5px;
+}
+
+.news-skin-name {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #222;
+}
+
+.news-skin-description {
+  font-size: 12px;
+  line-height: 1.35;
+  color: #555;
+}
+
+.news-skin-badge {
+  align-self: flex-start;
+
+  padding: 2px 9px;
+
+  border-radius: 999px;
+
+  background: rgba(106, 90, 205, 0.15);
+  color: #6a5acd;
+
+  font-size: 11.5px;
+  font-weight: 800;
+}
+
+@media (max-width: 820px), (pointer: coarse) and (max-height: 500px) {
+
+  .news-tab {
+    min-height: 44px;
+  }
+
+  .news-skins-grid {
+    grid-template-columns: 1fr;
   }
 }

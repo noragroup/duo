@@ -8,7 +8,8 @@
 //  - Règle de la pitié : 25 cartes ou plus en main = éliminé.
 //  - 7 : échange de main avec le joueur de son choix (facultatif).
 //  - 0 : toutes les mains passent au joueur suivant (facultatif).
-//  - Un +X ne peut jamais être posé sur un +Y de puissance supérieure.
+//  - Pendant un cumul, on ne peut répondre que par une attaque aussi forte ou plus forte
+//    (une fois le cumul pioché, le jeu reprend normalement).
 //  - Cartes spéciales : +4 de couleur, Défausse Tout, Passe Tout le Monde,
 //    Joker Inversion +4, Joker +6, Joker +10, Joker Roulette de Couleur
 //    (c'est le JOUEUR SUIVANT qui choisit la couleur, puis pioche jusqu'à l'obtenir).
@@ -258,19 +259,11 @@ export function getSharedState(game) {
 // ---------------------------------------------------------------------------
 
 export function canPlayCard(card, topCard, currentColor, hand, stackCount = 0) {
-    // Attaque en cours : seule une attaque de puissance >= est autorisée
+    // Attaque en cours : seule une attaque de puissance >= est autorisée.
+    // Cette règle ne vaut QUE tant que le cumul est en cours : une fois qu'un joueur a pioché,
+    // le cumul retombe à 0 et le joueur suivant rejoue normalement (même avec un +2 ou un +4).
     if (stackCount > 0) {
         return isAttackCard(card) && getAttackPower(card) >= getAttackPower(topCard);
-    }
-
-    // Un +X ne peut pas être posé sur un +Y plus puissant
-    // (ex : +2 impossible sur un +4, mais +4, +6 et +10 restent jouables)
-    if (
-        isAttackCard(card) &&
-        isAttackCard(topCard) &&
-        getAttackPower(card) < getAttackPower(topCard)
-    ) {
-        return false;
     }
 
     // Les jokers se jouent à tout moment
