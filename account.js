@@ -359,21 +359,7 @@ function renderGuestView(view) {
     ));
 
     view.appendChild(buildMessageBox());
-
-    // Google
-    const google = el("button", "account-google");
-    google.type = "button";
-    google.appendChild(el("span", "account-google-logo", "G"));
-    google.appendChild(el(
-        "span",
-        "",
-        state.pendingCredential ? "Confirmer et me connecter avec Google" : "Continuer avec Google"
-    ));
-    google.addEventListener("click", continueWithGoogle);
-    view.appendChild(google);
-
-    view.appendChild(el("div", "account-separator", "ou avec une adresse e-mail"));
-
+    
     // Onglets
     const tabs = el("div", "account-tabs");
     [["create", "Créer un compte"], ["login", "Se connecter"]].forEach(([id, label]) => {
