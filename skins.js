@@ -147,7 +147,7 @@ export const SKINS = [
         folder: "images/duo/gradient/",
         extension: "webp",
         unlock: "shop",
-        price: 300,
+        price: 150,
         unlockHint: "Achetable dans la boutique",
         preview: ["red-7", "blue-reverse", "green-draw2", "draw4"]
     },
@@ -248,7 +248,7 @@ export const SKINS = [
         folder: "images/duo-no-mercy/gradient/",
         extension: "webp",
         unlock: "shop",
-        price: 300,
+        price: 150,
         unlockHint: "Achetable dans la boutique",
         preview: ["red-7", "blue-draw4", "draw6", "roulette"]
     },
