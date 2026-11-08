@@ -27,7 +27,10 @@ import {
     GoogleAuthProvider,
     signOut,
     sendPasswordResetEmail,
-    sendEmailVerification
+    sendEmailVerification,
+    deleteUser,
+    reauthenticateWithCredential,
+    reauthenticateWithPopup
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 // Succès "Compte sécurisé" : débloqué dès qu'un e-mail ou Google est relié au compte
@@ -51,7 +54,10 @@ const state = {
     busy: false,
     confirmReplace: false,   // 2e étape : confirmer le remplacement de la progression de cet appareil
     pendingCredential: null, // compte Google existant, en attente de confirmation
-    signOutConfirm: false
+    signOutConfirm: false,
+    deleteConfirm: false,     // 2e étape : confirmer la suppression définitive
+    deleteNeedsPassword: false, // Firebase demande de confirmer l'identité (mot de passe)
+    deletePassword: ""
 };
 
 // ---------------------------------------------------------------------------
@@ -110,6 +116,10 @@ function describeAuthError(error) {
             return "Ce site n'est pas autorisé pour la connexion Google (Firebase > Authentication > Settings > Authorized domains).";
         case "auth/provider-already-linked":
             return "Ce compte est déjà relié.";
+        case "auth/requires-recent-login":
+            return "Pour ta sécurité, confirme ton identité avant de continuer.";
+        case "auth/user-mismatch":
+            return "Ce n'est pas le bon compte pour confirmer ton identité.";
         default:
             return "Une erreur est survenue. Réessaie dans un instant.";
     }
@@ -288,6 +298,9 @@ function resetTransientState() {
     state.confirmReplace = false;
     state.pendingCredential = null;
     state.signOutConfirm = false;
+    state.deleteConfirm = false;
+    state.deleteNeedsPassword = false;
+    state.deletePassword = "";
 }
 
 function openAccountPopup() {
@@ -359,7 +372,21 @@ function renderGuestView(view) {
     ));
 
     view.appendChild(buildMessageBox());
-    
+
+    // Google
+    const google = el("button", "account-google");
+    google.type = "button";
+    google.appendChild(el("span", "account-google-logo", "G"));
+    google.appendChild(el(
+        "span",
+        "",
+        state.pendingCredential ? "Confirmer et me connecter avec Google" : "Continuer avec Google"
+    ));
+    google.addEventListener("click", continueWithGoogle);
+    view.appendChild(google);
+
+    view.appendChild(el("div", "account-separator", "ou avec une adresse e-mail"));
+
     // Onglets
     const tabs = el("div", "account-tabs");
     [["create", "Créer un compte"], ["login", "Se connecter"]].forEach(([id, label]) => {
@@ -495,6 +522,58 @@ function renderAccountInfo(view, user) {
             "Tu repartiras avec un compte invité vierge sur cet appareil. Ta progression reste sur ton compte."
         ));
     }
+
+    // Zone "danger" séparée, pour qu'on ne clique pas dessus par erreur juste après "Se déconnecter"
+    const dangerZone = el("div", "account-danger-zone");
+    dangerZone.appendChild(el("div", "account-danger-zone-title", "⚠️ Zone dangereuse"));
+
+    if (state.deleteNeedsPassword) {
+        // Firebase demande de confirmer l'identité avant une action aussi sensible
+        dangerZone.appendChild(el(
+            "p",
+            "account-note",
+            "Confirme ton mot de passe pour supprimer définitivement ton compte."
+        ));
+
+        const password = el("input", "account-input");
+        password.type = "password";
+        password.placeholder = "Mot de passe";
+        password.autocomplete = "current-password";
+        password.value = state.deletePassword;
+        password.addEventListener("input", () => { state.deletePassword = password.value; });
+        dangerZone.appendChild(password);
+
+        const confirmWithPassword = el("button", "account-danger", "Confirmer et supprimer définitivement");
+        confirmWithPassword.type = "button";
+        confirmWithPassword.addEventListener("click", deleteAccount);
+        dangerZone.appendChild(confirmWithPassword);
+
+        const cancel = el("button", "account-link", "Annuler");
+        cancel.type = "button";
+        cancel.addEventListener("click", () => {
+            state.deleteConfirm = false;
+            state.deleteNeedsPassword = false;
+            state.deletePassword = "";
+            renderAccountView();
+        });
+        dangerZone.appendChild(cancel);
+    } else {
+        const deleteButton = el("button", "account-danger", state.deleteConfirm ? "Confirmer la suppression définitive" : "🗑️ Supprimer mon compte");
+        deleteButton.id = "account-delete";
+        deleteButton.type = "button";
+        deleteButton.addEventListener("click", deleteAccount);
+        dangerZone.appendChild(deleteButton);
+
+        if (state.deleteConfirm) {
+            dangerZone.appendChild(el(
+                "p",
+                "account-note",
+                "⚠️ Cette action est irréversible : ta progression, tes skins, tes points DUO et tes amis seront définitivement supprimés."
+            ));
+        }
+    }
+
+    view.appendChild(dangerZone);
 }
 
 // ---------------------------------------------------------------------------
@@ -702,6 +781,117 @@ async function resendVerification() {
         setMessage("error", describeAuthError(error));
     } finally {
         setBusy(false);
+    }
+}
+
+// Best-effort : retire mes données (progression, amis, ID DUO) de la base.
+// Doit être fait AVANT deleteUser() : une fois le compte supprimé, on n'a plus le droit d'écrire.
+async function deleteAccountData(uid) {
+    try {
+        const snapshot = await get(ref(db, `users/${uid}`));
+        const data = snapshot.val() || {};
+
+        // Retire ma présence de la liste d'amis de chacun de mes amis
+        const friendIds = Object.keys(data.friends || {});
+        await Promise.all(friendIds.map(friendId =>
+            set(ref(db, `users/${friendId}/friends/${uid}`), null).catch(() => {})
+        ));
+
+        // Libère mon ID DUO pour que quelqu'un d'autre puisse le reprendre
+        if (data.duoId) {
+            await set(ref(db, `duoIds/${data.duoId}`), null).catch(() => {});
+        }
+
+        // Supprime le reste (progression, succès, skins, pseudo...)
+        await set(ref(db, `users/${uid}`), null);
+    } catch (error) {
+        console.error("Impossible de nettoyer les données du compte :", error);
+    }
+}
+
+// Tente de confirmer l'identité du joueur (Firebase l'exige pour une suppression de compte
+// si la dernière connexion date un peu). Retourne true si la ré-authentification a réussi.
+async function reauthenticate(user) {
+    const providers = (user.providerData || []).map(info => info.providerId);
+
+    if (providers.includes("google.com")) {
+        await reauthenticateWithPopup(user, new GoogleAuthProvider());
+        return true;
+    }
+
+    if (providers.includes("password") && state.deletePassword) {
+        const credential = EmailAuthProvider.credential(user.email, state.deletePassword);
+        await reauthenticateWithCredential(user, credential);
+        return true;
+    }
+
+    return false;
+}
+
+// Termine réellement la suppression : données Firebase puis compte. N'est appelée
+// qu'une fois l'identité du joueur confirmée (fraîchement), jamais avant — pour qu'un
+// "Annuler" avant cette étape laisse TOUJOURS le compte intact, sans aucune exception.
+async function finishAccountDeletion(user) {
+    await deleteAccountData(user.uid);
+    await deleteUser(user);
+
+    // L'appareil ne doit rien garder de ce compte : sinon le prochain invité en hériterait
+    [KEY_NAME, KEY_DUO_ID, KEY_EQUIPPED, KEY_OWNED].forEach(key => localStorage.removeItem(key));
+    location.reload();
+}
+
+async function deleteAccount() {
+    if (state.busy) return;
+
+    if (isInRoom()) {
+        setMessage("error", "Quitte le salon avant de supprimer ton compte.");
+        return;
+    }
+
+    const user = auth.currentUser;
+    const providers = (user.providerData || []).map(info => info.providerId);
+
+    // Étape 1 : avertissement
+    if (!state.deleteConfirm && !state.deleteNeedsPassword) {
+        state.deleteConfirm = true;
+        renderAccountView();
+        return;
+    }
+
+    // Étape 2 (compte Google) : popup de confirmation d'identité, puis suppression immédiate
+    if (state.deleteConfirm && !state.deleteNeedsPassword && providers.includes("google.com")) {
+        setBusy(true);
+        try {
+            await reauthenticateWithPopup(user, new GoogleAuthProvider());
+            await finishAccountDeletion(user);
+        } catch (error) {
+            console.error("Erreur de compte :", error);
+            setBusy(false);
+            setMessage("error", describeAuthError(error));
+            // Rien n'a été touché : le joueur peut simplement réessayer ou annuler
+        }
+        return;
+    }
+
+    // Étape 2 (compte e-mail/mot de passe) : demande le mot de passe avant de continuer
+    if (state.deleteConfirm && !state.deleteNeedsPassword) {
+        state.deleteNeedsPassword = true;
+        renderAccountView();
+        return;
+    }
+
+    // Étape 3 (compte e-mail/mot de passe) : vérifie le mot de passe, puis supprime
+    setBusy(true);
+    try {
+        const confirmed = await reauthenticate(user);
+        if (!confirmed) throw { code: "auth/invalid-credential" };
+
+        await finishAccountDeletion(user);
+    } catch (error) {
+        console.error("Erreur de compte :", error);
+        setBusy(false);
+        setMessage("error", describeAuthError(error));
+        // Rien n'a été touché : seul le mot de passe était incorrect
     }
 }
 

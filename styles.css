@@ -5689,3 +5689,41 @@ body.my-turn::after {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ============================================================ */
+/* COMPTE : ZONE DANGEREUSE (suppression de compte)              */
+/* ============================================================ */
+
+.account-danger-zone {
+  margin-top: 18px;
+  padding: 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  border: 1px dashed rgba(229, 57, 53, 0.5);
+  border-radius: 12px;
+
+  background: rgba(229, 57, 53, 0.08);
+}
+
+.account-danger-zone-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+
+  color: #ff8a80;
+}
+
+.account-danger-zone .account-input {
+  margin: 0;
+}
+
+.account-danger-zone .account-danger,
+.account-danger-zone .account-link {
+  align-self: stretch;
+  text-align: center;
+}
