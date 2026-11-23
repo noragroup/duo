@@ -1,4 +1,4 @@
-let currentVersion = "DUO v0.5.3";
+let currentVersion = "DUO v0.5.4";
 
 document.getElementById("version-text").textContent = currentVersion;
 
